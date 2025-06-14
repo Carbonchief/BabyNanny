@@ -1,0 +1,13 @@
+﻿<TelerikQRCode Width="@Size"
+               Height="@Size"
+               Value="@QrValue"
+               Color="@QrColour"
+               Background="@QrBackgroundColour">
+</TelerikQRCode>
+
+@code {
+    public string Size { get; set; } = "120px";
+    public string QrColour { get; set; } = "e15613";
+    public string QrBackgroundColour { get; set; } = "transparent";
+    public string QrValue { get; set; } = "mailto:clientservice@telerik.com";
+}

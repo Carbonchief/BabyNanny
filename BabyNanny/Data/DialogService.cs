@@ -1,0 +1,15 @@
+﻿namespace BabyNanny.Data
+{
+    internal class DialogService: IDialogService
+    {
+        public async Task<string> DisplayPrompt(string title,string message)
+        {
+            return await Application.Current!.Windows[0].Page!.DisplayPromptAsync(title,message);
+        }
+
+        public async Task<bool> DisplayAlert(string title,string message,string accept ,string cancel)
+        {
+            return await Application.Current!.Windows[0].Page!.DisplayAlert(title,message,accept,cancel);
+        }
+    }
+}

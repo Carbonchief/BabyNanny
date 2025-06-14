@@ -1,0 +1,371 @@
+﻿@page "/"
+@using BabyNanny.Models
+@using System.Timers;
+@inject IConnectivity ConnectivityService;
+@inject NavigationManager NavigationManager;
+@inject IDialogService DialogService;
+
+
+<div>
+    <div class="item">
+        <div class="icon">
+            <img class="img-thumbnail" src="images/baby-sleeping.svg" alt="Baby Sleeping" width="40">
+        </div>
+        <div class="text">
+            <h5>
+                @TxtSleep
+            </h5>
+            <h6>
+                @TxtSleepProgress
+            </h6>
+
+        </div>
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Sleeping))">
+            @BtnSleepText
+        </TelerikButton>
+    </div>
+    <hr>
+    <div class="item">
+        <div class="icon">
+            <img class="img-thumbnail" src="images/baby-diaper.svg" alt="Baby Diaper" width="40">
+        </div>
+        <div class="text">
+            <h5>
+                @TxtDiaper
+            </h5>
+            <h6>
+                @TxtDiaperProgress
+            </h6>
+
+        </div>
+        <TelerikButton Id="btnDiaper" Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Diaper))">
+            @BtnDiaperText
+        </TelerikButton>
+    </div>
+    <hr>
+    <div class="item">
+        <div class="icon">
+            <img class="img-thumbnail" src="images/baby-bottle.png" alt="Baby Bottle" width="40" />
+        </div>
+        <div class="text">
+            <h5>
+                @TxtFeed
+            </h5>
+            <h6>
+                @TxtFeedProgress
+            </h6>
+        </div>
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Feeding))">
+            @BtnFeedText
+        </TelerikButton>
+    </div>
+    <div>
+        <br />
+        <TelerikListView Data="@LstActivityActions"
+        Pageable="true"
+        PageSize="4">
+            <HeaderTemplate>
+                <div class="text-center">
+                    <h4>Activity</h4>
+                </div>
+            </HeaderTemplate>
+            <Template>
+                <div class="k-card k-card-horizontal">
+                    <div class="k-vbox k-flex-grow">
+                        <div class="k-card-body ">
+                            @switch (context.Type)
+                            {
+                                case 0:
+                                    <img class="" src="images/baby-bottle.png" alt="Baby Bottle" width="20" />
+                                    break;
+                                case 1:
+                                    <img src="images/baby-sleeping.svg" alt="Baby Sleeping" width="20">
+                                    break;
+                                case 2:
+                                    <img src="images/baby-diaper.svg" alt="Baby Diaper" width="20">
+                                    break;
+                            }
+                            &nbsp; <h6 class=" d-inline">@TimeDifference(context.Started) ago</h6> <h6 class="k-card-subtitle d-inline">@TimeDifference(context.Started, context.Stopped)</h6>
+                        </div>
+                        <div class="k-card-actions k-actions-horizontal k-actions-start">
+                        </div>
+                    </div>
+
+                </div>
+            </Template>
+        </TelerikListView>
+    </div>
+</div>
+
+@code
+{
+    private string TxtSleep { get; set; } = "Sleep";
+    private string TxtSleepProgress { get; set; } = "";
+    private string TxtDiaper { get; set; } = "Diaper Change";
+    private string TxtDiaperProgress { get; set; } = "";
+    private string TxtFeed { get; set; } = "Feed";
+    private string TxtFeedProgress { get; set; } = "";
+    private string BtnSleepText { get; set; } = "Start";
+    private string BtnFeedText { get; set; } = "Start";
+    private string BtnDiaperText { get; set; } = "Log";
+    private List<Child>? LstChildren { get; set; }
+    private List<BabyAction>? LstActions { get; set; }
+    private List<BabyAction>? LstActivityActions { get; set; }
+    private Timer? _timer;
+    private DateTime? _startTime;
+    private DateTime? _currentTime;
+    private BabyAction? _lastAction;
+
+
+    void ActionClick(BabyNannyRepository.ActionTypes actionType)
+    {
+        var lastAction = GetLastAction(actionType);
+        var actionText = actionType switch
+        {
+            BabyNannyRepository.ActionTypes.Feeding => "Feeding",
+            BabyNannyRepository.ActionTypes.Sleeping => "Sleep",
+            BabyNannyRepository.ActionTypes.Diaper => "Diaper",
+            _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
+        };
+
+        var isStopping = lastAction is { Stopped: null };
+        if (lastAction == null) return;
+        lastAction = isStopping ? StopAction(lastAction) : AddAction(actionType);
+
+        // var actionStatus = isStopping ? "Stopped" : "Started";
+
+        // var timestamp = isStopping ? TimeDifference(lastAction.Started, lastAction.Stopped) : "";
+
+        switch (actionType)
+        {
+            case BabyNannyRepository.ActionTypes.Feeding:
+                TxtFeed = $"{actionText}";
+                TxtFeedProgress = isStopping ? "a few seconds ago" : "In Progress";
+                BtnFeedText = isStopping ? "Start" : "Stop";
+
+                break;
+            case BabyNannyRepository.ActionTypes.Sleeping:
+                TxtSleep = $"{actionText}";
+                TxtSleepProgress = isStopping ? "a few seconds ago" : "In Progress";
+                BtnSleepText = isStopping ? "Start" : "Stop";
+
+                break;
+            case BabyNannyRepository.ActionTypes.Diaper:
+                // txtDiaper = $"{actionText}";
+                TxtDiaperProgress = isStopping ? "a few seconds ago" : "In Progress";
+
+                // btnDiaperText = isStopping ? "Start" : "Stop";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null);
+        }
+
+        if (isStopping)
+        {
+            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            // Trigger re-rendering of the component
+            InvokeAsync(StateHasChanged);
+        }
+
+        if (actionType != BabyNannyRepository.ActionTypes.Diaper)
+        {
+            if (isStopping)
+            {
+                StopTimer();
+            }
+            else
+            {
+                StartTimer(lastAction);
+            }
+        }
+        else
+        {
+            if (lastAction != null) StopAction(lastAction);
+        }
+    }
+
+    private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
+    {
+        LstActions ??= App.BabyNannyRepository?.GetActions();
+        var babyAction = LstActions?.OrderByDescending(s => s.Started).FirstOrDefault(s => s.Type == (int)type);
+        return babyAction;
+    }
+
+    private static BabyAction StopAction(BabyAction action)
+    {
+        action.Stopped = DateTime.Now;
+        App.BabyNannyRepository?.EditAction(action);
+        return action;
+    }
+
+    private BabyAction? AddAction(BabyNannyRepository.ActionTypes type)
+    {
+        if (LstChildren == null) return null;
+        var action = new BabyAction { Type = (int)type, Started = DateTime.Now, ChildId = LstChildren[0].Id };
+        App.BabyNannyRepository?.AddAction(action);
+        LstActions?.Add(action);
+        LstActions = LstActions?.OrderByDescending(x => x.Started).ToList();
+        _lastAction = action;
+        return action;
+    }
+
+    private void UpdateTime(object? source, ElapsedEventArgs e)
+    {
+        var currentTime = DateTime.Now;
+        var timeSpan = currentTime - _startTime;
+        switch (_lastAction.Type)
+        {
+            case 0:
+                TxtFeed = timeSpan.GetValueOrDefault().ToString(@"hh\:mm\:ss");
+                BtnFeedText = "Stop";
+                break;
+            case 1:
+                TxtSleep = timeSpan.GetValueOrDefault().ToString(@"hh\:mm\:ss");
+                // btnSleepText = "Stop";
+                break;
+            case 2:
+                TxtDiaper = timeSpan.GetValueOrDefault().ToString(@"hh\:mm\:ss");
+                BtnDiaperText = "Stop";
+                break;
+        }
+
+        // Trigger re-rendering of the component
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        var lstChildren = App.BabyNannyRepository?.GetChildren();
+        var lstActions = App.BabyNannyRepository?.GetActions();
+        _currentTime = DateTime.Now;
+
+        if (lstActions is { Count: > 0 })
+            _lastAction = lstActions[0];
+
+        LstActivityActions = (List<BabyAction>)[];
+        if (lstChildren != null && lstChildren.Any())
+            LstChildren = lstChildren;
+        else
+        {
+            LstChildren = new List<Child>();
+            // var childName = DialogService.DisplayPrompt("Add Child", "Please enter the child's name").Result;
+            var childName = "Child 1";
+            if (!string.IsNullOrEmpty(childName))
+            {
+                var child = App.BabyNannyRepository?.AddChild(new Child { Name = childName });
+                if (child != null)
+                    LstChildren.Add(child);
+            }
+        }
+
+        if (lstActions != null && lstActions.Any())
+        {
+            LstActions = lstActions;
+
+            var sleepAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
+            if (sleepAction?.Stopped == null)
+            {
+                
+                TxtSleepProgress = "In Progress";
+                TxtSleep = (DateTime.Now - sleepAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
+                BtnSleepText = "Stop";
+            }
+            else
+            {
+                TxtSleepProgress = TimeDifference(sleepAction.Stopped, DateTime.Now) + " ago";
+            }
+
+            var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
+            if (feedAction?.Stopped == null)
+            {
+              
+                TxtFeedProgress = "In Progress";
+                TxtFeed = (DateTime.Now - feedAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
+                BtnFeedText = "Stop";
+            }
+            else
+            {
+                TxtFeedProgress = TimeDifference(feedAction.Stopped, DateTime.Now) + " ago";
+            }
+
+            var diaperAction = GetLastAction(BabyNannyRepository.ActionTypes.Diaper);
+            if (diaperAction?.Stopped != null)
+            {
+                TxtDiaperProgress = TimeDifference(diaperAction.Stopped, DateTime.Now) + " ago";
+            }
+
+            if (sleepAction != null)
+            {
+                LstActivityActions?.Add(sleepAction);
+            }
+
+            if (feedAction != null)
+            {
+                LstActivityActions?.Add(feedAction);
+            }
+
+            if (diaperAction != null)
+            {
+                LstActivityActions?.Add(diaperAction);
+            }           
+        }
+        else
+            LstActions = new List<BabyAction>();
+    }
+
+    private void StartTimer(BabyAction? action)
+    {
+        _startTime = action?.Started;
+        _timer = new Timer(1000); // 1 second interval
+        _timer.Elapsed += UpdateTime;
+        _timer.Start();
+    }
+
+    private void StopTimer()
+    {
+        _timer?.Stop();
+    }
+
+    private static string TimeDifference(DateTime? start, DateTime? end)
+    {
+        if (start == null)
+            return "Invalid start time";
+
+        end ??= DateTime.Now;
+
+        var timeSpan = end.Value - start.Value;
+
+        var months = (end.Value.Year - start.Value.Year) * 12 + end.Value.Month - start.Value.Month;
+        if (end.Value.Day < start.Value.Day)
+        {
+            months--;
+        }
+
+        var days = timeSpan.Days % 30; // Approximate 30 days per month
+        var hours = timeSpan.Hours;
+        var minutes = timeSpan.Minutes;
+        var seconds = timeSpan.Seconds;
+
+        var result = new List<string>();
+        if (months > 0) result.Add($"{months}M");
+        if (days > 0) result.Add($"{days}d");
+        if (hours > 0) result.Add($"{hours}h");
+        if (minutes > 0) result.Add($"{minutes}m");
+        if (seconds > 0) result.Add($"{seconds}s");
+
+        return string.Join(" ", result);
+    }
+
+    private string TimeDifference(DateTime? contextStarted)
+    {
+        return TimeDifference(contextStarted, _currentTime);
+    }
+}
