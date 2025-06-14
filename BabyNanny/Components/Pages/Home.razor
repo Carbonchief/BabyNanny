@@ -129,8 +129,11 @@
         };
 
         var isStopping = lastAction is { Stopped: null };
-        if (lastAction == null) return;
-        lastAction = isStopping ? StopAction(lastAction) : AddAction(actionType);
+        lastAction = isStopping
+            ? StopAction(lastAction!)
+            : AddAction(actionType);
+        if (lastAction == null)
+            return;
 
         // var actionStatus = isStopping ? "Stopped" : "Started";
 
@@ -250,7 +253,7 @@
         if (lstActions is { Count: > 0 })
             _lastAction = lstActions[0];
 
-        LstActivityActions = (List<BabyAction>)[];
+        LstActivityActions = new List<BabyAction>();
         if (lstChildren != null && lstChildren.Any())
             LstChildren = lstChildren;
         else
