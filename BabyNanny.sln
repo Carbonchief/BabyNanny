@@ -5,6 +5,8 @@ VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BabyNanny", "BabyNanny\BabyNanny.csproj", "{73234D4F-1C3C-4715-9835-12B4BB33F1B3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BabyNanny.Tests", "BabyNanny.Tests\BabyNanny.Tests.csproj", "{5C66D036-3C81-4D07-82FF-9B130C1D1D73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +17,15 @@ Global
 		{73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Release|Any CPU.Deploy.0 = Release|Any CPU
-	EndGlobalSection
+               {73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Release|Any CPU.Build.0 = Release|Any CPU
+               {73234D4F-1C3C-4715-9835-12B4BB33F1B3}.Release|Any CPU.Deploy.0 = Release|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Release|Any CPU.Build.0 = Release|Any CPU
+                {5C66D036-3C81-4D07-82FF-9B130C1D1D73}.Release|Any CPU.Deploy.0 = Release|Any CPU
+        EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection

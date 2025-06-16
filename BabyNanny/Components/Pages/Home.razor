@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using BabyNanny.Models
 @using System.Timers;
+@using BabyNanny.Helpers;
 @inject IConnectivity ConnectivityService;
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
@@ -85,7 +86,7 @@
                                     <img src="images/baby-diaper.svg" alt="Baby Diaper" width="20">
                                     break;
                             }
-                            &nbsp; <h6 class=" d-inline">@TimeDifference(context.Started) ago</h6> <h6 class="k-card-subtitle d-inline">@TimeDifference(context.Started, context.Stopped)</h6>
+                            &nbsp; <h6 class=" d-inline">@TimeDifference(context.Started) ago</h6> <h6 class="k-card-subtitle d-inline">@TimeUtils.TimeDifference(context.Started, context.Stopped)</h6>
                         </div>
                         <div class="k-card-actions k-actions-horizontal k-actions-start">
                         </div>
@@ -283,7 +284,7 @@
             }
             else
             {
-                TxtSleepProgress = TimeDifference(sleepAction.Stopped, DateTime.Now) + " ago";
+                TxtSleepProgress = TimeUtils.TimeDifference(sleepAction.Stopped, DateTime.Now) + " ago";
             }
 
             var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
@@ -296,13 +297,13 @@
             }
             else
             {
-                TxtFeedProgress = TimeDifference(feedAction.Stopped, DateTime.Now) + " ago";
+                TxtFeedProgress = TimeUtils.TimeDifference(feedAction.Stopped, DateTime.Now) + " ago";
             }
 
             var diaperAction = GetLastAction(BabyNannyRepository.ActionTypes.Diaper);
             if (diaperAction?.Stopped != null)
             {
-                TxtDiaperProgress = TimeDifference(diaperAction.Stopped, DateTime.Now) + " ago";
+                TxtDiaperProgress = TimeUtils.TimeDifference(diaperAction.Stopped, DateTime.Now) + " ago";
             }
 
             if (sleepAction != null)
@@ -337,38 +338,8 @@
         _timer?.Stop();
     }
 
-    private static string TimeDifference(DateTime? start, DateTime? end)
-    {
-        if (start == null)
-            return "Invalid start time";
-
-        end ??= DateTime.Now;
-
-        var timeSpan = end.Value - start.Value;
-
-        var months = (end.Value.Year - start.Value.Year) * 12 + end.Value.Month - start.Value.Month;
-        if (end.Value.Day < start.Value.Day)
-        {
-            months--;
-        }
-
-        var days = timeSpan.Days % 30; // Approximate 30 days per month
-        var hours = timeSpan.Hours;
-        var minutes = timeSpan.Minutes;
-        var seconds = timeSpan.Seconds;
-
-        var result = new List<string>();
-        if (months > 0) result.Add($"{months}M");
-        if (days > 0) result.Add($"{days}d");
-        if (hours > 0) result.Add($"{hours}h");
-        if (minutes > 0) result.Add($"{minutes}m");
-        if (seconds > 0) result.Add($"{seconds}s");
-
-        return string.Join(" ", result);
-    }
-
     private string TimeDifference(DateTime? contextStarted)
     {
-        return TimeDifference(contextStarted, _currentTime);
+        return TimeUtils.TimeDifference(contextStarted, _currentTime);
     }
 }
