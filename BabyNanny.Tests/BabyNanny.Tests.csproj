@@ -9,6 +9,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BabyNanny\BabyNanny.csproj" />
+    <!-- Include the TimeUtils helper directly so MAUI workloads are not required -->
+    <Compile Include="..\BabyNanny\Helpers\TimeUtils.cs" Link="TimeUtils.cs" />
   </ItemGroup>
 </Project>
