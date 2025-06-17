@@ -1,6 +1,7 @@
 ﻿using BabyNanny.Models;
 using SQLite;
 using SQLiteNetExtensions.Extensions;
+using System.Linq;
 
 namespace BabyNanny.Data
 {
@@ -13,6 +14,17 @@ namespace BabyNanny.Data
             _connection = new SQLiteConnection(dbPath);
             _connection.CreateTable<Child>();
             _connection.CreateTable<BabyAction>();
+
+            var tableInfo = _connection.GetTableInfo(nameof(BabyAction));
+            var columns = tableInfo.Select(c => c.Name).ToList();
+            if (!columns.Contains(nameof(BabyAction.FeedingType)))
+                _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.FeedingType)} INTEGER");
+            if (!columns.Contains(nameof(BabyAction.AmountML)))
+                _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.AmountML)} INTEGER");
+            if (!columns.Contains(nameof(BabyAction.BottleType)))
+                _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.BottleType)} TEXT");
+            if (!columns.Contains(nameof(BabyAction.MealDescription)))
+                _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.MealDescription)} TEXT");
         }
 
         #region Child

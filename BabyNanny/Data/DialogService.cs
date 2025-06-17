@@ -11,5 +11,10 @@
         {
             return await Application.Current!.Windows[0].Page!.DisplayAlert(title,message,accept,cancel);
         }
+
+        public async Task<string?> DisplayActionSheet(string title,string cancel,string destruction, params string[] buttons)
+        {
+            return await Application.Current!.Windows[0].Page!.DisplayActionSheet(title, cancel, destruction, buttons);
+        }
     }
 }

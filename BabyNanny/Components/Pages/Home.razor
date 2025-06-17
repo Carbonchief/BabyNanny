@@ -2,6 +2,7 @@
 @using BabyNanny.Models
 @using System.Timers;
 @using BabyNanny.Helpers;
+@using System.Linq;
 @inject IConnectivity ConnectivityService;
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
@@ -21,7 +22,7 @@
             </h6>
 
         </div>
-        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Sleeping))">
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Sleeping))">
             @BtnSleepText
         </TelerikButton>
     </div>
@@ -39,7 +40,7 @@
             </h6>
 
         </div>
-        <TelerikButton Id="btnDiaper" Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Diaper))">
+        <TelerikButton Id="btnDiaper" Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Diaper))">
             @BtnDiaperText
         </TelerikButton>
     </div>
@@ -56,7 +57,7 @@
                 @TxtFeedProgress
             </h6>
         </div>
-        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(() => ActionClick(BabyNannyRepository.ActionTypes.Feeding))">
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Feeding))">
             @BtnFeedText
         </TelerikButton>
     </div>
@@ -118,74 +119,123 @@
     private BabyAction? _lastAction;
 
 
-    void ActionClick(BabyNannyRepository.ActionTypes actionType)
+    async Task ActionClick(BabyNannyRepository.ActionTypes actionType)
     {
+        if (actionType == BabyNannyRepository.ActionTypes.Feeding)
+        {
+            await HandleFeedingAction();
+            return;
+        }
+
         var lastAction = GetLastAction(actionType);
         var actionText = actionType switch
         {
-            BabyNannyRepository.ActionTypes.Feeding => "Feeding",
             BabyNannyRepository.ActionTypes.Sleeping => "Sleep",
             BabyNannyRepository.ActionTypes.Diaper => "Diaper",
             _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
         };
 
         var isStopping = lastAction is { Stopped: null };
-        lastAction = isStopping
-            ? StopAction(lastAction!)
-            : AddAction(actionType);
+        lastAction = isStopping ? StopAction(lastAction!) : AddAction(actionType);
         if (lastAction == null)
             return;
 
-        // var actionStatus = isStopping ? "Stopped" : "Started";
-
-        // var timestamp = isStopping ? TimeDifference(lastAction.Started, lastAction.Stopped) : "";
-
         switch (actionType)
         {
-            case BabyNannyRepository.ActionTypes.Feeding:
-                TxtFeed = $"{actionText}";
-                TxtFeedProgress = isStopping ? "a few seconds ago" : "In Progress";
-                BtnFeedText = isStopping ? "Start" : "Stop";
-
-                break;
             case BabyNannyRepository.ActionTypes.Sleeping:
                 TxtSleep = $"{actionText}";
                 TxtSleepProgress = isStopping ? "a few seconds ago" : "In Progress";
                 BtnSleepText = isStopping ? "Start" : "Stop";
-
                 break;
             case BabyNannyRepository.ActionTypes.Diaper:
-                // txtDiaper = $"{actionText}";
                 TxtDiaperProgress = isStopping ? "a few seconds ago" : "In Progress";
-
-                // btnDiaperText = isStopping ? "Start" : "Stop";
                 break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null);
         }
 
         if (isStopping)
         {
             if (lastAction != null) LstActivityActions?.Add(lastAction);
-            // Trigger re-rendering of the component
             InvokeAsync(StateHasChanged);
         }
 
         if (actionType != BabyNannyRepository.ActionTypes.Diaper)
         {
             if (isStopping)
-            {
                 StopTimer();
-            }
             else
-            {
                 StartTimer(lastAction);
-            }
         }
         else
         {
             if (lastAction != null) StopAction(lastAction);
         }
+    }
+
+    private async Task HandleFeedingAction()
+    {
+        var lastAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
+        var isStopping = lastAction is { Stopped: null };
+
+        if (isStopping)
+        {
+            lastAction = StopAction(lastAction!);
+            TxtFeed = "Feeding";
+            TxtFeedProgress = "a few seconds ago";
+            BtnFeedText = "Start";
+            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            StopTimer();
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var option = await DialogService.DisplayActionSheet("Feeding", "Cancel", null, "Bottle", "Meal", "Left Breast", "Right Breast");
+        if (string.IsNullOrEmpty(option) || option == "Cancel")
+            return;
+
+        var feedType = option switch
+        {
+            "Bottle" => BabyAction.FeedingTypes.Bottle,
+            "Meal" => BabyAction.FeedingTypes.Meal,
+            "Left Breast" => BabyAction.FeedingTypes.LeftBreast,
+            _ => BabyAction.FeedingTypes.RightBreast
+        };
+
+        if (LstChildren == null) return;
+        var action = new BabyAction
+        {
+            Type = (int)BabyNannyRepository.ActionTypes.Feeding,
+            Started = DateTime.Now,
+            ChildId = LstChildren[0].Id,
+            FeedingType = feedType
+        };
+        App.BabyNannyRepository?.AddAction(action);
+        LstActions?.Add(action);
+        LstActions = LstActions?.OrderByDescending(x => x.Started).ToList();
+        _lastAction = action;
+
+        TxtFeed = "Feeding";
+        TxtFeedProgress = "In Progress";
+        BtnFeedText = "Stop";
+
+        StartTimer(action);
+
+        if (feedType == BabyAction.FeedingTypes.Bottle)
+        {
+            var amount = await DialogService.DisplayPrompt("Amount", "Amount (ml)");
+            if (int.TryParse(amount, out var ml))
+                action.AmountML = ml;
+            var bottle = await DialogService.DisplayActionSheet("Bottle Type", "Cancel", null, "Breast Milk", "Formula");
+            if (!string.IsNullOrEmpty(bottle) && bottle != "Cancel")
+                action.BottleType = bottle;
+        }
+        else if (feedType == BabyAction.FeedingTypes.Meal)
+        {
+            var desc = await DialogService.DisplayPrompt("Meal", "Description");
+            if (!string.IsNullOrWhiteSpace(desc))
+                action.MealDescription = desc;
+        }
+
+        App.BabyNannyRepository?.EditAction(action);
     }
 
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
