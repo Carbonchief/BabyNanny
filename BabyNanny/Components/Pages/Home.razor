@@ -153,7 +153,7 @@
 
         if (isStopping)
         {
-            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            RefreshActivityActions();
             InvokeAsync(StateHasChanged);
         }
 
@@ -174,7 +174,7 @@
             TxtFeed = "Feeding";
             TxtFeedProgress = "a few seconds ago";
             BtnFeedText = "Start";
-            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            RefreshActivityActions();
             StopTimer();
             InvokeAsync(StateHasChanged);
             return;
@@ -244,7 +244,7 @@
         StopAction(action);
 
         TxtDiaperProgress = "a few seconds ago";
-        LstActivityActions?.Add(action);
+        RefreshActivityActions();
         InvokeAsync(StateHasChanged);
     }
 
@@ -271,6 +271,19 @@
         LstActions = LstActions?.OrderByDescending(x => x.Started).ToList();
         _lastAction = action;
         return action;
+    }
+
+    private void RefreshActivityActions()
+    {
+        if (LstActions == null)
+            return;
+
+        LstActivityActions = LstActions
+            .Where(a => a.Stopped != null)
+            .GroupBy(a => a.Type)
+            .Select(g => g.OrderByDescending(x => x.Started).First())
+            .OrderByDescending(x => x.Started)
+            .ToList();
     }
 
     private void UpdateTime(object? source, ElapsedEventArgs e)
@@ -366,20 +379,7 @@
                 TxtDiaperProgress = TimeUtils.TimeDifference(diaperAction.Started, DateTime.Now) + " ago";
             }
 
-            if (sleepAction != null)
-            {
-                LstActivityActions?.Add(sleepAction);
-            }
-
-            if (feedAction != null)
-            {
-                LstActivityActions?.Add(feedAction);
-            }
-
-            if (diaperAction != null)
-            {
-                LstActivityActions?.Add(diaperAction);
-            }
+            RefreshActivityActions();
 
             // Resume timer for any ongoing action after app restart
             var runningActions = new[] { sleepAction, feedAction }
