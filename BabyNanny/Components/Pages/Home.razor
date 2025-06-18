@@ -337,7 +337,7 @@
             var sleepAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
             if (sleepAction?.Stopped == null)
             {
-                
+
                 TxtSleepProgress = "In Progress";
                 TxtSleep = (DateTime.Now - sleepAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnSleepText = "Stop";
@@ -350,7 +350,7 @@
             var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
             if (feedAction?.Stopped == null)
             {
-              
+
                 TxtFeedProgress = "In Progress";
                 TxtFeed = (DateTime.Now - feedAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnFeedText = "Stop";
@@ -379,10 +379,25 @@
             if (diaperAction != null)
             {
                 LstActivityActions?.Add(diaperAction);
-            }           
+            }
+
+            // Resume timer for any ongoing action after app restart
+            var runningActions = new[] { sleepAction, feedAction }
+                .Where(a => a?.Stopped == null)
+                .OrderByDescending(a => a?.Started)
+                .ToList();
+
+            if (runningActions.Any())
+            {
+                var resumeAction = runningActions.First();
+                _lastAction = resumeAction!;
+                StartTimer(resumeAction);
+            }
         }
         else
+        {
             LstActions = new List<BabyAction>();
+        }
     }
 
     private void StartTimer(BabyAction? action)
