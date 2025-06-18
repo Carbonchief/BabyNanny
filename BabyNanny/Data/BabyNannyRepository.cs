@@ -25,16 +25,18 @@ namespace BabyNanny.Data
                 _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.BottleType)} TEXT");
             if (!columns.Contains(nameof(BabyAction.MealDescription)))
                 _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.MealDescription)} TEXT");
+            if (!columns.Contains(nameof(BabyAction.DiaperType)))
+                _connection.Execute($"ALTER TABLE {nameof(BabyAction)} ADD COLUMN {nameof(BabyAction.DiaperType)} TEXT");
         }
 
         #region Child
 
         public List<Child>? GetChildren()
         {
-            Init();      
+            Init();
             return _connection.GetAllWithChildren<Child>();
             //return _connection?.Table<Child>().ToList();
-            
+
         }
 
         public Child AddChild(Child child)
@@ -57,21 +59,21 @@ namespace BabyNanny.Data
         public List<BabyAction>? GetActions()
         {
             Init();
-            return _connection?.Table<BabyAction>().OrderByDescending(x=>x.Started).ToList();
+            return _connection?.Table<BabyAction>().OrderByDescending(x => x.Started).ToList();
         }
 
         public void AddAction(BabyAction? action)
         {
             _connection = new SQLiteConnection(dbPath);
             _connection.Insert(action);
-      
+
         }
 
         public void EditAction(BabyAction action)
         {
             _connection = new SQLiteConnection(dbPath);
             _connection.Update(action);
-      
+
         }
 
         public void DeleteAction(int id)
