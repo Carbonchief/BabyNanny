@@ -5,7 +5,7 @@
     xmlns:pages="clr-namespace:BabyNanny.Components.Pages"
     x:Class="BabyNanny.MainPage">
 
-    <ContentPage Title="Home" IconImageSource="home.svg">
+    <ContentPage IconImageSource="home.svg">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Home}" />
@@ -13,7 +13,7 @@
         </BlazorWebView>
     </ContentPage>
 
-    <ContentPage Title="Stats" IconImageSource="stats.svg">
+    <ContentPage IconImageSource="stats.svg">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Stats}" />
