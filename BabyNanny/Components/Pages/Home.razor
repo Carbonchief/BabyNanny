@@ -154,7 +154,13 @@
 
         if (isStopping)
         {
-            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            if (lastAction != null)
+            {
+                LstActivityActions?.Add(lastAction);
+                LstActivityActions = LstActivityActions?
+                    .OrderByDescending(a => a.Started)
+                    .ToList();
+            }
             InvokeAsync(StateHasChanged);
         }
 
@@ -167,7 +173,22 @@
         }
         else
         {
-            if (lastAction != null) StopAction(lastAction);
+            if (lastAction != null)
+            {
+                if (!isStopping)
+                {
+                    lastAction = StopAction(lastAction);
+                    LstActivityActions?.Add(lastAction);
+                    LstActivityActions = LstActivityActions?
+                        .OrderByDescending(a => a.Started)
+                        .ToList();
+                    InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    StopAction(lastAction);
+                }
+            }
         }
     }
 
@@ -182,7 +203,13 @@
             TxtFeed = "Feeding";
             TxtFeedProgress = "a few seconds ago";
             BtnFeedText = "Start";
-            if (lastAction != null) LstActivityActions?.Add(lastAction);
+            if (lastAction != null)
+            {
+                LstActivityActions?.Add(lastAction);
+                LstActivityActions = LstActivityActions?
+                    .OrderByDescending(a => a.Started)
+                    .ToList();
+            }
             StopTimer();
             InvokeAsync(StateHasChanged);
             return;
@@ -369,7 +396,11 @@
             if (diaperAction != null)
             {
                 LstActivityActions?.Add(diaperAction);
-            }           
+            }
+
+            LstActivityActions = LstActivityActions?
+                .OrderByDescending(a => a.Started)
+                .ToList();
         }
         else
             LstActions = new List<BabyAction>();
