@@ -63,9 +63,7 @@
     </div>
     <div>
         <br />
-        <TelerikListView Data="@LstActivityActions"
-        Pageable="true"
-        PageSize="4">
+        <TelerikListView Data="@LstActivityActions">
             <HeaderTemplate>
                 <div class="text-center">
                     <h4>Activity</h4>
@@ -126,12 +124,16 @@
             await HandleFeedingAction();
             return;
         }
+        if (actionType == BabyNannyRepository.ActionTypes.Diaper)
+        {
+            await HandleDiaperAction();
+            return;
+        }
 
         var lastAction = GetLastAction(actionType);
         var actionText = actionType switch
         {
             BabyNannyRepository.ActionTypes.Sleeping => "Sleep",
-            BabyNannyRepository.ActionTypes.Diaper => "Diaper",
             _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
         };
 
@@ -147,49 +149,18 @@
                 TxtSleepProgress = isStopping ? "a few seconds ago" : "In Progress";
                 BtnSleepText = isStopping ? "Start" : "Stop";
                 break;
-            case BabyNannyRepository.ActionTypes.Diaper:
-                TxtDiaperProgress = isStopping ? "a few seconds ago" : "In Progress";
-                break;
         }
 
         if (isStopping)
         {
-            if (lastAction != null)
-            {
-                LstActivityActions?.Add(lastAction);
-                LstActivityActions = LstActivityActions?
-                    .OrderByDescending(a => a.Started)
-                    .ToList();
-            }
+            if (lastAction != null) LstActivityActions?.Add(lastAction);
             InvokeAsync(StateHasChanged);
         }
 
-        if (actionType != BabyNannyRepository.ActionTypes.Diaper)
-        {
-            if (isStopping)
-                StopTimer();
-            else
-                StartTimer(lastAction);
-        }
+        if (isStopping)
+            StopTimer();
         else
-        {
-            if (lastAction != null)
-            {
-                if (!isStopping)
-                {
-                    lastAction = StopAction(lastAction);
-                    LstActivityActions?.Add(lastAction);
-                    LstActivityActions = LstActivityActions?
-                        .OrderByDescending(a => a.Started)
-                        .ToList();
-                    InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    StopAction(lastAction);
-                }
-            }
-        }
+            StartTimer(lastAction);
     }
 
     private async Task HandleFeedingAction()
@@ -203,13 +174,7 @@
             TxtFeed = "Feeding";
             TxtFeedProgress = "a few seconds ago";
             BtnFeedText = "Start";
-            if (lastAction != null)
-            {
-                LstActivityActions?.Add(lastAction);
-                LstActivityActions = LstActivityActions?
-                    .OrderByDescending(a => a.Started)
-                    .ToList();
-            }
+            if (lastAction != null) LstActivityActions?.Add(lastAction);
             StopTimer();
             InvokeAsync(StateHasChanged);
             return;
@@ -263,6 +228,24 @@
         }
 
         App.BabyNannyRepository?.EditAction(action);
+    }
+
+    private async Task HandleDiaperAction()
+    {
+        var option = await DialogService.DisplayActionSheet("Diaper", "Cancel", null, "Pee", "Poo", "Both");
+        if (string.IsNullOrEmpty(option) || option == "Cancel")
+            return;
+
+        var action = AddAction(BabyNannyRepository.ActionTypes.Diaper);
+        if (action == null)
+            return;
+
+        action.DiaperType = option;
+        StopAction(action);
+
+        TxtDiaperProgress = "a few seconds ago";
+        LstActivityActions?.Add(action);
+        InvokeAsync(StateHasChanged);
     }
 
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
@@ -354,7 +337,7 @@
             var sleepAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
             if (sleepAction?.Stopped == null)
             {
-                
+
                 TxtSleepProgress = "In Progress";
                 TxtSleep = (DateTime.Now - sleepAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnSleepText = "Stop";
@@ -367,7 +350,7 @@
             var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
             if (feedAction?.Stopped == null)
             {
-              
+
                 TxtFeedProgress = "In Progress";
                 TxtFeed = (DateTime.Now - feedAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnFeedText = "Stop";
@@ -398,12 +381,23 @@
                 LstActivityActions?.Add(diaperAction);
             }
 
-            LstActivityActions = LstActivityActions?
-                .OrderByDescending(a => a.Started)
+            // Resume timer for any ongoing action after app restart
+            var runningActions = new[] { sleepAction, feedAction }
+                .Where(a => a?.Stopped == null)
+                .OrderByDescending(a => a?.Started)
                 .ToList();
+
+            if (runningActions.Any())
+            {
+                var resumeAction = runningActions.First();
+                _lastAction = resumeAction!;
+                StartTimer(resumeAction);
+            }
         }
         else
+        {
             LstActions = new List<BabyAction>();
+        }
     }
 
     private void StartTimer(BabyAction? action)
