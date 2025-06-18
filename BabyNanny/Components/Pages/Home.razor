@@ -344,7 +344,7 @@
             }
             else
             {
-                TxtSleepProgress = TimeUtils.TimeDifference(sleepAction.Stopped, DateTime.Now) + " ago";
+                TxtSleepProgress = TimeUtils.TimeDifference(sleepAction.Started, DateTime.Now) + " ago";
             }
 
             var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
@@ -357,13 +357,13 @@
             }
             else
             {
-                TxtFeedProgress = TimeUtils.TimeDifference(feedAction.Stopped, DateTime.Now) + " ago";
+                TxtFeedProgress = TimeUtils.TimeDifference(feedAction.Started, DateTime.Now) + " ago";
             }
 
             var diaperAction = GetLastAction(BabyNannyRepository.ActionTypes.Diaper);
             if (diaperAction?.Stopped != null)
             {
-                TxtDiaperProgress = TimeUtils.TimeDifference(diaperAction.Stopped, DateTime.Now) + " ago";
+                TxtDiaperProgress = TimeUtils.TimeDifference(diaperAction.Started, DateTime.Now) + " ago";
             }
 
             if (sleepAction != null)
