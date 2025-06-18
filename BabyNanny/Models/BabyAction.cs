@@ -30,6 +30,7 @@ namespace BabyNanny.Models
         public int? AmountML { get; set; }
         public string? BottleType { get; set; }
         public string? MealDescription { get; set; }
+        public string? DiaperType { get; set; }
 
         [ForeignKey(typeof(Child))]
         public int ChildId { get; set; }

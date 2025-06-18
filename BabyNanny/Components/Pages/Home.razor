@@ -126,12 +126,16 @@
             await HandleFeedingAction();
             return;
         }
+        if (actionType == BabyNannyRepository.ActionTypes.Diaper)
+        {
+            await HandleDiaperAction();
+            return;
+        }
 
         var lastAction = GetLastAction(actionType);
         var actionText = actionType switch
         {
             BabyNannyRepository.ActionTypes.Sleeping => "Sleep",
-            BabyNannyRepository.ActionTypes.Diaper => "Diaper",
             _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
         };
 
@@ -147,9 +151,6 @@
                 TxtSleepProgress = isStopping ? "a few seconds ago" : "In Progress";
                 BtnSleepText = isStopping ? "Start" : "Stop";
                 break;
-            case BabyNannyRepository.ActionTypes.Diaper:
-                TxtDiaperProgress = isStopping ? "a few seconds ago" : "In Progress";
-                break;
         }
 
         if (isStopping)
@@ -158,29 +159,10 @@
             InvokeAsync(StateHasChanged);
         }
 
-        if (actionType != BabyNannyRepository.ActionTypes.Diaper)
-        {
-            if (isStopping)
-                StopTimer();
-            else
-                StartTimer(lastAction);
-        }
+        if (isStopping)
+            StopTimer();
         else
-        {
-            if (lastAction != null)
-            {
-                if (!isStopping)
-                {
-                    lastAction = StopAction(lastAction);
-                    LstActivityActions?.Add(lastAction);
-                    InvokeAsync(StateHasChanged);
-                }
-                else
-                {
-                    StopAction(lastAction);
-                }
-            }
-        }
+            StartTimer(lastAction);
     }
 
     private async Task HandleFeedingAction()
@@ -248,6 +230,24 @@
         }
 
         App.BabyNannyRepository?.EditAction(action);
+    }
+
+    private async Task HandleDiaperAction()
+    {
+        var option = await DialogService.DisplayActionSheet("Diaper", "Cancel", null, "Pee", "Poo", "Both");
+        if (string.IsNullOrEmpty(option) || option == "Cancel")
+            return;
+
+        var action = AddAction(BabyNannyRepository.ActionTypes.Diaper);
+        if (action == null)
+            return;
+
+        action.DiaperType = option;
+        StopAction(action);
+
+        TxtDiaperProgress = "a few seconds ago";
+        LstActivityActions?.Add(action);
+        InvokeAsync(StateHasChanged);
     }
 
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
