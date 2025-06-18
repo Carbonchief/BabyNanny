@@ -167,7 +167,19 @@
         }
         else
         {
-            if (lastAction != null) StopAction(lastAction);
+            if (lastAction != null)
+            {
+                if (!isStopping)
+                {
+                    lastAction = StopAction(lastAction);
+                    LstActivityActions?.Add(lastAction);
+                    InvokeAsync(StateHasChanged);
+                }
+                else
+                {
+                    StopAction(lastAction);
+                }
+            }
         }
     }
 
