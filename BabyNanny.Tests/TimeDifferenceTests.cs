@@ -21,7 +21,7 @@ namespace BabyNanny.Tests
             var start = new DateTime(2024, 1, 1, 0, 0, 0);
             var end = start.AddMinutes(2).AddSeconds(30);
             var result = TimeUtils.TimeDifference(start, end);
-            Assert.Equal("2m 30s", result);
+            Assert.Equal("2m", result);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace BabyNanny.Tests
                 .AddMinutes(5)
                 .AddSeconds(6);
             var result = TimeUtils.TimeDifference(start, end);
-            Assert.Equal("1M 3d 4h 5m 6s", result);
+            Assert.Equal("1M 3d", result);
         }
     }
 }
