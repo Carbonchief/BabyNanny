@@ -1,4 +1,76 @@
 @page "/stats"
 
-<h1>Stats</h1>
-<p>Statistics will appear here.</p>
+<h3>Stats</h3>
+<div class="k-form d-flex gap-2 mb-3">
+    <select @bind="SelectedActionType" @onchange="UpdateStats" class="form-select">
+        @foreach (var at in Enum.GetValues<BabyNannyRepository.ActionTypes>())
+        {
+            <option value="@((int)at)">@at</option>
+        }
+    </select>
+    <select @bind="SelectedRange" @onchange="UpdateStats" class="form-select">
+        @foreach (var d in TimeRanges)
+        {
+            <option value="@d">@d days</option>
+        }
+    </select>
+</div>
+<p>Average per day: @AveragePerDay.ToString("0.##")</p>
+@if (SubtypeChartData?.Count > 0)
+{
+    <TelerikChart>
+        <ChartSeriesItems>
+            <ChartSeries Type="ChartSeriesType.Column" Name="Average" Data="@SubtypeChartData" Field="Value" CategoryField="Category">
+                <ChartSeriesLabels Visible="true"></ChartSeriesLabels>
+            </ChartSeries>
+        </ChartSeriesItems>
+    </TelerikChart>
+}
+
+@code {
+    private BabyNannyRepository.ActionTypes SelectedActionType { get; set; } = BabyNannyRepository.ActionTypes.Feeding;
+    private int SelectedRange { get; set; } = 7;
+    private double AveragePerDay { get; set; }
+    private List<int> TimeRanges { get; } = new() { 7, 14, 30 };
+    private List<ChartItem> SubtypeChartData { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        UpdateStats();
+    }
+
+    private void UpdateStats()
+    {
+        var actions = App.BabyNannyRepository?.GetActions();
+        if (actions == null)
+            return;
+        var from = DateTime.Today.AddDays(-SelectedRange + 1);
+        var filtered = actions.Where(a => a.Started >= from && a.Type == (int)SelectedActionType).ToList();
+        AveragePerDay = filtered.Count / (double)SelectedRange;
+
+        if (SelectedActionType == BabyNannyRepository.ActionTypes.Feeding)
+        {
+            SubtypeChartData = filtered
+                .GroupBy(a => a.FeedingType?.ToString() ?? "Unknown")
+                .Select(g => new ChartItem { Category = g.Key, Value = g.Count() / (double)SelectedRange })
+                .ToList();
+        }
+        else if (SelectedActionType == BabyNannyRepository.ActionTypes.Diaper)
+        {
+            SubtypeChartData = filtered
+                .GroupBy(a => a.DiaperType ?? "Unknown")
+                .Select(g => new ChartItem { Category = g.Key, Value = g.Count() / (double)SelectedRange })
+                .ToList();
+        }
+        else
+        {
+            SubtypeChartData = new();
+        }
+    }
+
+    private class ChartItem
+    {
+        public string Category { get; set; } = string.Empty;
+        public double Value { get; set; }
+    }
+}
