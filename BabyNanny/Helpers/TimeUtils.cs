@@ -25,11 +25,27 @@ namespace BabyNanny.Helpers
             var seconds = timeSpan.Seconds;
 
             var result = new List<string>();
-            if (months > 0) result.Add($"{months}M");
-            if (days > 0) result.Add($"{days}d");
-            if (hours > 0) result.Add($"{hours}h");
-            if (minutes > 0) result.Add($"{minutes}m");
-            if (seconds > 0) result.Add($"{seconds}s");
+
+            if (months > 0)
+                result.Add($"{months}M");
+
+            if (days > 0)
+                result.Add($"{days}d");
+
+            if (months == 0)
+            {
+                if (hours > 0)
+                    result.Add($"{hours}h");
+
+                if (days == 0)
+                {
+                    if (minutes > 0)
+                        result.Add($"{minutes}m");
+
+                    if (timeSpan.TotalMinutes < 1 && seconds > 0)
+                        result.Add($"{seconds}s");
+                }
+            }
 
             return string.Join(" ", result);
         }
