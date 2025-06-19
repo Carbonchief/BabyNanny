@@ -70,6 +70,20 @@ else
         var filtered = actions
             .Where(a => a.Started.HasValue && a.Started.Value >= from && a.Type == (int)SelectedActionType)
             .ToList();
+
+        if (SelectedActionType == BabyNannyRepository.ActionTypes.Sleeping)
+        {
+            var completed = filtered.Where(a => a.Stopped.HasValue).ToList();
+            AveragePerDay = completed.Sum(a => (a.Stopped!.Value - a.Started!.Value).TotalHours) / SelectedRange;
+            SubtypeChartData = new()
+            {
+                new ChartItem { Category = "Sleep", Value = AveragePerDay }
+            };
+            _shouldRenderChart = true;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
         AveragePerDay = filtered.Count / (double)SelectedRange;
 
         if (SelectedActionType == BabyNannyRepository.ActionTypes.Feeding)
