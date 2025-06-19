@@ -53,3 +53,16 @@ The application is intentionally simple and serves as a learning project for MAU
 3. Synchronizing data to a cloud service for backup.
 
 Licensed under the MIT License. See `LICENSE.txt` for details.
+
+## Backend API
+
+A minimal ASP.NET Core Web API project (`BabyNanny.Api`) provides endpoints for uploading data from the MAUI app to a SQL Server database. The API uses Entity Framework Core and includes migrations for creating the `Child` and `BabyAction` tables.
+
+Restore, build and run the API:
+
+```bash
+cd BabyNanny.Api
+dotnet run
+```
+
+The default connection string uses `LocalDB`; adjust `appsettings.json` as needed.
