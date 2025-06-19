@@ -22,7 +22,7 @@
             </h6>
 
         </div>
-        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" @onclick:stopPropagation="true" OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Sleeping))">
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" @onclick:stopPropagation="true" @onclick="async () => await ActionClick(BabyNannyRepository.ActionTypes.Sleeping)">
             @BtnSleepText
         </TelerikButton>
     </div>
@@ -57,7 +57,7 @@
                 @TxtFeedProgress
             </h6>
         </div>
-        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" @onclick:stopPropagation="true" OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Feeding))">
+        <TelerikButton Class="homeButton" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" @onclick:stopPropagation="true" @onclick="async () => await ActionClick(BabyNannyRepository.ActionTypes.Feeding)">
             @BtnFeedText
         </TelerikButton>
     </div>
@@ -100,6 +100,7 @@
     {
         <TelerikWindow @bind-Visible="IsEditPopupVisible" Modal="true" Width="350px">
             <WindowTitle>Edit Action</WindowTitle>
+            <WindowContent>
             <div class="m-3">
                 <div class="mb-2">
                     <label>Start Time</label>
@@ -145,6 +146,7 @@
                     <TelerikButton OnClick="() => IsEditPopupVisible = false" Class="ml-2">Cancel</TelerikButton>
                 </div>
             </div>
+            </WindowContent>
         </TelerikWindow>
     }
 </div>

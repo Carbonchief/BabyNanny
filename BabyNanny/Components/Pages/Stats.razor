@@ -2,13 +2,13 @@
 
 <h3>Stats</h3>
 <div class="k-form d-flex gap-2 mb-3">
-    <select @bind="SelectedActionType" @bind:after="UpdateStats" class="form-select">
+    <select @bind="SelectedActionType" class="form-select">
         @foreach (var at in Enum.GetValues<BabyNannyRepository.ActionTypes>())
         {
             <option value="@((int)at)">@at</option>
         }
     </select>
-    <select @bind="SelectedRange" @bind:after="UpdateStats" class="form-select">
+    <select @bind="SelectedRange" class="form-select">
         @foreach (var d in TimeRanges)
         {
             <option value="@d">@d days</option>
@@ -28,8 +28,27 @@
 }
 
 @code {
-    private BabyNannyRepository.ActionTypes SelectedActionType { get; set; } = BabyNannyRepository.ActionTypes.Feeding;
-    private int SelectedRange { get; set; } = 7;
+    private BabyNannyRepository.ActionTypes _selectedActionType = BabyNannyRepository.ActionTypes.Feeding;
+    private BabyNannyRepository.ActionTypes SelectedActionType
+    {
+        get => _selectedActionType;
+        set
+        {
+            _selectedActionType = value;
+            UpdateStats();
+        }
+    }
+
+    private int _selectedRange = 7;
+    private int SelectedRange
+    {
+        get => _selectedRange;
+        set
+        {
+            _selectedRange = value;
+            UpdateStats();
+        }
+    }
     private double AveragePerDay { get; set; }
     private List<int> TimeRanges { get; } = new() { 7, 14, 30 };
     private List<ChartItem> SubtypeChartData { get; set; } = new();
