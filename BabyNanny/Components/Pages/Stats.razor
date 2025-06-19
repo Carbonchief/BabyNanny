@@ -1,4 +1,5 @@
 @page "/stats"
+@inject IJSRuntime JSRuntime
 
 <h3>Stats</h3>
 <div class="k-form d-flex gap-2 mb-3">
@@ -18,13 +19,11 @@
 <p>Average per day: @AveragePerDay.ToString("0.##")</p>
 @if (SubtypeChartData?.Count > 0)
 {
-    <TelerikChart>
-        <ChartSeriesItems>
-            <ChartSeries Type="ChartSeriesType.Column" Name="Average" Data="@SubtypeChartData" Field="Value" CategoryField="Category">
-                <ChartSeriesLabels Visible="true"></ChartSeriesLabels>
-            </ChartSeries>
-        </ChartSeriesItems>
-    </TelerikChart>
+    <canvas id="statsChart" width="400" height="300"></canvas>
+}
+else
+{
+    <p>No data available.</p>
 }
 
 @code {
@@ -52,6 +51,7 @@
     private double AveragePerDay { get; set; }
     private List<int> TimeRanges { get; } = new() { 7, 14, 30 };
     private List<ChartItem> SubtypeChartData { get; set; } = new();
+    private bool _shouldRenderChart;
 
     protected override void OnInitialized()
     {
@@ -87,6 +87,25 @@
         {
             SubtypeChartData = new();
         }
+
+        _shouldRenderChart = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_shouldRenderChart)
+        {
+            _shouldRenderChart = false;
+            await RenderChart();
+        }
+    }
+
+    private Task RenderChart()
+    {
+        var labels = SubtypeChartData.Select(c => c.Category).ToList();
+        var values = SubtypeChartData.Select(c => c.Value).ToList();
+        return JSRuntime.InvokeVoidAsync("renderStatsChart", labels, values).AsTask();
     }
 
     public class ChartItem
