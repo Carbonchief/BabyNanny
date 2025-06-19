@@ -3,9 +3,10 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:BabyNanny.Components.Pages"
-    x:Class="BabyNanny.MainPage">
+    x:Class="BabyNanny.MainPage"
+    BackgroundColor="{DynamicResource PageBackgroundColor}">
 
-    <ContentPage IconImageSource="home.png">
+    <ContentPage IconImageSource="home.png" BackgroundColor="{DynamicResource PageBackgroundColor}">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Home}" />
@@ -13,7 +14,7 @@
         </BlazorWebView>
     </ContentPage>
 
-    <ContentPage IconImageSource="stats.png">
+    <ContentPage IconImageSource="stats.png" BackgroundColor="{DynamicResource PageBackgroundColor}">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Stats}" />
