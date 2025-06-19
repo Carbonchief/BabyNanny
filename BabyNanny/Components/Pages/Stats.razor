@@ -64,7 +64,9 @@
         if (actions == null)
             return;
         var from = DateTime.Today.AddDays(-SelectedRange + 1);
-        var filtered = actions.Where(a => a.Started >= from && a.Type == (int)SelectedActionType).ToList();
+        var filtered = actions
+            .Where(a => a.Started.HasValue && a.Started.Value >= from && a.Type == (int)SelectedActionType)
+            .ToList();
         AveragePerDay = filtered.Count / (double)SelectedRange;
 
         if (SelectedActionType == BabyNannyRepository.ActionTypes.Feeding)
