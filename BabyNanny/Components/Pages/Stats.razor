@@ -1,6 +1,7 @@
 @page "/stats"
 @inject IJSRuntime JSRuntime
 
+<div class="container my-3">
 <h3>Stats</h3>
 <div class="k-form d-flex gap-2 mb-3">
     <select @bind="SelectedActionType" class="form-select">
@@ -15,6 +16,7 @@
             <option value="@d">@d days</option>
         }
     </select>
+
 </div>
 <p>Average per day: @AveragePerDay.ToString("0.##")</p>
 @if (SubtypeChartData?.Count > 0)
@@ -25,6 +27,7 @@ else
 {
     <p>No data available.</p>
 }
+</div>
 
 @code {
     private BabyNannyRepository.ActionTypes _selectedActionType = BabyNannyRepository.ActionTypes.Feeding;

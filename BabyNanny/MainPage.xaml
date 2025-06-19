@@ -6,7 +6,7 @@
     x:Class="BabyNanny.MainPage"
     BackgroundColor="{DynamicResource PageBackgroundColor}">
 
-    <ContentPage IconImageSource="home.png" BackgroundColor="{DynamicResource PageBackgroundColor}">
+    <ContentPage IconImageSource="{AppThemeBinding Light=home.png, Dark=home_white.png}" BackgroundColor="{DynamicResource PageBackgroundColor}">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Home}" />
@@ -14,7 +14,7 @@
         </BlazorWebView>
     </ContentPage>
 
-    <ContentPage IconImageSource="stats.png" BackgroundColor="{DynamicResource PageBackgroundColor}">
+    <ContentPage IconImageSource="{AppThemeBinding Light=stats.png, Dark=stats_white.png}" BackgroundColor="{DynamicResource PageBackgroundColor}">
         <BlazorWebView HostPage="wwwroot/index.html">
             <BlazorWebView.RootComponents>
                 <RootComponent Selector="#app" ComponentType="{x:Type pages:Stats}" />
