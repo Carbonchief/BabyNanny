@@ -356,6 +356,7 @@
             EditingMealDescription = action.MealDescription;
         }
         IsEditPopupVisible = true;
+        InvokeAsync(StateHasChanged);
     }
 
     private void SaveEdit()
@@ -409,6 +410,8 @@
 
     private void UpdateTime(object? source, ElapsedEventArgs e)
     {
+        if (_lastAction == null || _startTime == null)
+            return;
         var currentTime = DateTime.Now;
         var timeSpan = currentTime - _startTime;
         switch (_lastAction.Type)
