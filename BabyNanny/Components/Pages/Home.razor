@@ -9,7 +9,7 @@
 
 
 <div>
-    <div class="item" @onclick="() => OpenEditPopup(BabyNannyRepository.ActionTypes.Sleeping)">
+    <div class="item">
         <div class="icon">
             <img class="img-thumbnail" src="images/baby-sleeping.svg" alt="Baby Sleeping" width="40">
         </div>
@@ -45,7 +45,7 @@
         </TelerikButton>
     </div>
     <hr>
-    <div class="item" @onclick="() => OpenEditPopup(BabyNannyRepository.ActionTypes.Feeding)">
+    <div class="item">
         <div class="icon">
             <img class="img-thumbnail" src="images/baby-bottle.png" alt="Baby Bottle" width="40" />
         </div>
@@ -100,59 +100,6 @@
         </TelerikListView>
     </div>
 
-    @if (IsEditPopupVisible && EditingAction != null)
-    {
-        <TelerikWindow @bind-Visible="IsEditPopupVisible" Modal="true" Width="350px">
-            <WindowTitle>Edit Action</WindowTitle>
-            <WindowContent>
-            <div class="m-3">
-                <div class="mb-2">
-                    <label>Start Time</label>
-                    <TelerikDateTimePicker @bind-Value="EditingStart" Width="250px" />
-                </div>
-
-                @if (EditingAction.Type == (int)BabyNannyRepository.ActionTypes.Feeding)
-                {
-                    <div class="mb-2">
-                        <label>Type of Feed</label>
-                        <InputSelect @bind-Value="EditingFeedingType">
-                            <option value="@BabyAction.FeedingTypes.Bottle">Bottle</option>
-                            <option value="@BabyAction.FeedingTypes.Meal">Meal</option>
-                            <option value="@BabyAction.FeedingTypes.LeftBreast">Left Breast</option>
-                            <option value="@BabyAction.FeedingTypes.RightBreast">Right Breast</option>
-                        </InputSelect>
-                    </div>
-
-                    @if (EditingFeedingType == BabyAction.FeedingTypes.Bottle)
-                    {
-                        <div class="mb-2">
-                            <label>Amount (ml)</label>
-                            <InputNumber @bind-Value="EditingAmount" />
-                        </div>
-                        <div class="mb-2">
-                            <label>Bottle Type</label>
-                            <InputSelect @bind-Value="EditingBottleType">
-                                <option value="Breast Milk">Breast Milk</option>
-                                <option value="Formula">Formula</option>
-                            </InputSelect>
-                        </div>
-                    }
-                    @if (EditingFeedingType == BabyAction.FeedingTypes.Meal)
-                    {
-                        <div class="mb-2">
-                            <label>Description</label>
-                            <InputText @bind-Value="EditingMealDescription" />
-                        </div>
-                    }
-                }
-                <div class="mt-3">
-                    <TelerikButton OnClick="SaveEdit">Save</TelerikButton>
-                    <TelerikButton OnClick="() => IsEditPopupVisible = false" Class="ml-2">Cancel</TelerikButton>
-                </div>
-            </div>
-            </WindowContent>
-        </TelerikWindow>
-    }
 </div>
 
 @code
@@ -174,13 +121,6 @@
     private DateTime? _currentTime;
     private BabyAction? _lastAction;
 
-    private bool IsEditPopupVisible { get; set; }
-    private BabyAction? EditingAction { get; set; }
-    private DateTime EditingStart { get; set; }
-    private BabyAction.FeedingTypes EditingFeedingType { get; set; }
-    private int? EditingAmount { get; set; }
-    private string? EditingBottleType { get; set; }
-    private string? EditingMealDescription { get; set; }
 
 
     async Task ActionClick(BabyNannyRepository.ActionTypes actionType)
@@ -340,60 +280,7 @@
         return action;
     }
 
-    private void OpenEditPopup(BabyNannyRepository.ActionTypes type)
-    {
-        var action = GetLastAction(type);
-        if (action == null || action.Stopped != null)
-            return;
 
-        EditingAction = action;
-        EditingStart = action.Started ?? DateTime.Now;
-        if (action.Type == (int)BabyNannyRepository.ActionTypes.Feeding)
-        {
-            EditingFeedingType = action.FeedingType ?? BabyAction.FeedingTypes.Bottle;
-            EditingAmount = action.AmountML;
-            EditingBottleType = action.BottleType;
-            EditingMealDescription = action.MealDescription;
-        }
-        IsEditPopupVisible = true;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void SaveEdit()
-    {
-        if (EditingAction == null)
-            return;
-
-        EditingAction.Started = EditingStart;
-
-        if (EditingAction.Type == (int)BabyNannyRepository.ActionTypes.Feeding)
-        {
-            EditingAction.FeedingType = EditingFeedingType;
-            if (EditingFeedingType == BabyAction.FeedingTypes.Bottle)
-            {
-                EditingAction.AmountML = EditingAmount;
-                EditingAction.BottleType = EditingBottleType;
-                EditingAction.MealDescription = null;
-            }
-            else if (EditingFeedingType == BabyAction.FeedingTypes.Meal)
-            {
-                EditingAction.MealDescription = EditingMealDescription;
-                EditingAction.AmountML = null;
-                EditingAction.BottleType = null;
-            }
-            else
-            {
-                EditingAction.AmountML = null;
-                EditingAction.BottleType = null;
-                EditingAction.MealDescription = null;
-            }
-        }
-
-        App.BabyNannyRepository?.EditAction(EditingAction);
-        _startTime = EditingAction.Started;
-        IsEditPopupVisible = false;
-        InvokeAsync(StateHasChanged);
-    }
 
     private void RefreshActivityActions()
     {
