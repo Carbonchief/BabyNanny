@@ -195,38 +195,11 @@
             await HandleDiaperAction();
             return;
         }
-
-        var lastAction = GetLastAction(actionType);
-        var actionText = actionType switch
+        if (actionType == BabyNannyRepository.ActionTypes.Sleeping)
         {
-            BabyNannyRepository.ActionTypes.Sleeping => "Sleep",
-            _ => throw new ArgumentOutOfRangeException(nameof(actionType), actionType, null)
-        };
-
-        var isStopping = lastAction is { Stopped: null };
-        lastAction = isStopping ? StopAction(lastAction!) : AddAction(actionType);
-        if (lastAction == null)
+            await HandleSleepAction();
             return;
-
-        switch (actionType)
-        {
-            case BabyNannyRepository.ActionTypes.Sleeping:
-                TxtSleep = $"{actionText}";
-                TxtSleepProgress = isStopping ? "a few seconds ago" : "In Progress";
-                BtnSleepText = isStopping ? "Start" : "Stop";
-                break;
         }
-
-        if (isStopping)
-        {
-            RefreshActivityActions();
-            InvokeAsync(StateHasChanged);
-        }
-
-        if (isStopping)
-            StopTimer();
-        else
-            StartTimer(lastAction);
     }
 
     private async Task HandleFeedingAction()
@@ -312,6 +285,34 @@
         TxtDiaperProgress = "a few seconds ago";
         RefreshActivityActions();
         InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSleepAction()
+    {
+        var lastAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
+        var isStopping = lastAction is { Stopped: null };
+
+        if (isStopping)
+        {
+            lastAction = StopAction(lastAction!);
+            TxtSleep = "Sleep";
+            TxtSleepProgress = "a few seconds ago";
+            BtnSleepText = "Start";
+            RefreshActivityActions();
+            StopTimer();
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var action = AddAction(BabyNannyRepository.ActionTypes.Sleeping);
+        if (action == null)
+            return;
+
+        TxtSleep = "Sleep";
+        TxtSleepProgress = "In Progress";
+        BtnSleepText = "Stop";
+
+        StartTimer(action);
     }
 
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
