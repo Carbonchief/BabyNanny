@@ -2,13 +2,13 @@
 
 <h3>Stats</h3>
 <div class="k-form d-flex gap-2 mb-3">
-    <select @bind="SelectedActionType" @onchange="UpdateStats" class="form-select">
+    <select @bind="SelectedActionType" @bind:after="UpdateStats" class="form-select">
         @foreach (var at in Enum.GetValues<BabyNannyRepository.ActionTypes>())
         {
             <option value="@((int)at)">@at</option>
         }
     </select>
-    <select @bind="SelectedRange" @onchange="UpdateStats" class="form-select">
+    <select @bind="SelectedRange" @bind:after="UpdateStats" class="form-select">
         @foreach (var d in TimeRanges)
         {
             <option value="@d">@d days</option>
