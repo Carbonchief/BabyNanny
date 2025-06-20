@@ -56,10 +56,13 @@ namespace BabyNanny.Data
 
         #region Action
 
-        public List<BabyAction>? GetActions()
+        public List<BabyAction>? GetActions(int? childId = null)
         {
             Init();
-            return _connection?.Table<BabyAction>().OrderByDescending(x => x.Started).ToList();
+            var query = _connection!.Table<BabyAction>().OrderByDescending(x => x.Started);
+            if (childId.HasValue && childId.Value > 0)
+                query = query.Where(a => a.ChildId == childId.Value);
+            return query.ToList();
         }
 
         public bool AddAction(BabyAction? action)

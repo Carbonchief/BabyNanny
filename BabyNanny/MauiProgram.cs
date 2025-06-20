@@ -23,6 +23,7 @@ namespace BabyNanny
             builder.Services.AddTelerikBlazor();
             builder.Services.AddSingleton(c => Connectivity.Current);
             builder.Services.AddSingleton<IDialogService, DialogService>();
+            builder.Services.AddSingleton<ChildStateService>();
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();

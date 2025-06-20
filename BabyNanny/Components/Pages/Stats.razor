@@ -1,5 +1,6 @@
 @page "/stats"
 @inject IJSRuntime JSRuntime
+@inject ChildStateService ChildState
 
 <div class="container my-3">
 <h3>Stats</h3>
@@ -58,12 +59,19 @@ else
 
     protected override void OnInitialized()
     {
+        ChildState.ChildChanged += HandleChildChanged;
         UpdateStats();
+    }
+
+    private void HandleChildChanged()
+    {
+        UpdateStats();
+        InvokeAsync(StateHasChanged);
     }
 
     private void UpdateStats()
     {
-        var actions = App.BabyNannyRepository?.GetActions();
+        var actions = App.BabyNannyRepository?.GetActions(ChildState.SelectedChildId);
         if (actions == null)
             return;
         var from = DateTime.Today.AddDays(-SelectedRange + 1);
@@ -129,5 +137,10 @@ else
     {
         public string Category { get; set; } = string.Empty;
         public double Value { get; set; }
+    }
+
+    public void Dispose()
+    {
+        ChildState.ChildChanged -= HandleChildChanged;
     }
 }

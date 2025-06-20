@@ -6,6 +6,7 @@
 @inject IConnectivity ConnectivityService;
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
+@inject ChildStateService ChildState;
 
 
 <div>
@@ -176,7 +177,7 @@
         {
             Type = (int)BabyNannyRepository.ActionTypes.Feeding,
             Started = DateTime.Now,
-            ChildId = LstChildren[0].Id,
+            ChildId = ChildState.SelectedChildId,
             FeedingType = feedType
         };
         var added = App.BabyNannyRepository?.AddAction(action) ?? false;
@@ -264,7 +265,7 @@
 
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
     {
-        LstActions ??= App.BabyNannyRepository?.GetActions();
+        LstActions ??= App.BabyNannyRepository?.GetActions(ChildState.SelectedChildId);
         var babyAction = LstActions?.OrderByDescending(s => s.Started).FirstOrDefault(s => s.Type == (int)type);
         return babyAction;
     }
@@ -278,8 +279,14 @@
 
     private async Task<BabyAction?> AddAction(BabyNannyRepository.ActionTypes type)
     {
-        if (LstChildren == null) return null;
-        var action = new BabyAction { Type = (int)type, Started = DateTime.Now, ChildId = LstChildren[0].Id };
+        if (LstChildren == null)
+            return null;
+        var action = new BabyAction
+        {
+            Type = (int)type,
+            Started = DateTime.Now,
+            ChildId = ChildState.SelectedChildId
+        };
         var added = App.BabyNannyRepository?.AddAction(action) ?? false;
         if (!added)
         {
@@ -344,28 +351,37 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        var lstChildren = App.BabyNannyRepository?.GetChildren();
-        var lstActions = App.BabyNannyRepository?.GetActions();
+        ChildState.ChildChanged += HandleChildChanged;
+        var children = App.BabyNannyRepository?.GetChildren() ?? new List<Child>();
+        if (!children.Any())
+        {
+            var child = App.BabyNannyRepository?.AddChild(new Child { Name = "Child 1" });
+            if (child != null)
+                children.Add(child);
+        }
+
+        LstChildren = children;
+
+        if (ChildState.SelectedChildId == 0 && children.Any())
+            ChildState.SetChild(children[0].Id);
+
+        LstActivityActions = new List<BabyAction>();
+        LoadChildActions();
+    }
+
+    private void HandleChildChanged()
+    {
+        LoadChildActions();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void LoadChildActions()
+    {
+        var lstActions = App.BabyNannyRepository?.GetActions(ChildState.SelectedChildId);
         _currentTime = DateTime.Now;
 
         if (lstActions is { Count: > 0 })
             _lastAction = lstActions[0];
-
-        LstActivityActions = new List<BabyAction>();
-        if (lstChildren != null && lstChildren.Any())
-            LstChildren = lstChildren;
-        else
-        {
-            LstChildren = new List<Child>();
-            // var childName = DialogService.DisplayPrompt("Add Child", "Please enter the child's name").Result;
-            var childName = "Child 1";
-            if (!string.IsNullOrEmpty(childName))
-            {
-                var child = App.BabyNannyRepository?.AddChild(new Child { Name = childName });
-                if (child != null)
-                    LstChildren.Add(child);
-            }
-        }
 
         if (lstActions != null && lstActions.Any())
         {
@@ -374,7 +390,6 @@
             var sleepAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
             if (sleepAction?.Stopped == null)
             {
-
                 TxtSleepProgress = "In Progress";
                 TxtSleep = (DateTime.Now - sleepAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnSleepText = "Stop";
@@ -387,7 +402,6 @@
             var feedAction = GetLastAction(BabyNannyRepository.ActionTypes.Feeding);
             if (feedAction?.Stopped == null)
             {
-
                 TxtFeedProgress = "In Progress";
                 TxtFeed = (DateTime.Now - feedAction?.Started).GetValueOrDefault().ToString(@"hh\:mm\:ss");
                 BtnFeedText = "Stop";
@@ -405,12 +419,12 @@
 
             RefreshActivityActions();
 
-            // Resume timer for any ongoing action after app restart
             var runningActions = new[] { sleepAction, feedAction }
                 .Where(a => a?.Stopped == null)
                 .OrderByDescending(a => a?.Started)
                 .ToList();
 
+            StopTimer();
             if (runningActions.Any())
             {
                 var resumeAction = runningActions.First();
@@ -421,6 +435,11 @@
         else
         {
             LstActions = new List<BabyAction>();
+            TxtSleepProgress = string.Empty;
+            TxtFeedProgress = string.Empty;
+            TxtDiaperProgress = string.Empty;
+            BtnSleepText = "Start";
+            BtnFeedText = "Start";
         }
     }
 

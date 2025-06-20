@@ -1,0 +1,56 @@
+@inject ChildStateService ChildState
+@inject IDialogService DialogService
+
+<select class="form-select form-select-sm w-auto d-inline" @onchange="OnChange" value="@_selectedId">
+    @foreach (var c in Children)
+    {
+        <option value="@c.Id">@c.Name</option>
+    }
+</select>
+<TelerikButton Class="ms-2" Size="@(ThemeConstants.Button.Size.Small)" OnClick="AddChild">Add Child</TelerikButton>
+
+@code {
+    private List<Child> Children { get; set; } = new();
+    private int _selectedId;
+
+    protected override void OnInitialized()
+    {
+        Children = App.BabyNannyRepository?.GetChildren() ?? new();
+        if (Children.Count > 0)
+        {
+            _selectedId = ChildState.SelectedChildId;
+            if (_selectedId == 0)
+            {
+                _selectedId = Children[0].Id;
+                ChildState.SetChild(_selectedId);
+            }
+        }
+    }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            _selectedId = id;
+            ChildState.SetChild(id);
+        }
+    }
+
+    private async Task AddChild()
+    {
+        var name = await DialogService.DisplayPrompt("Child Name", "Enter child's name");
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+        var birthdayStr = await DialogService.DisplayPrompt("Birthday", "yyyy-MM-dd (optional)");
+        DateTime? birthday = null;
+        if (DateTime.TryParse(birthdayStr, out var bday))
+            birthday = bday;
+        var child = App.BabyNannyRepository?.AddChild(new Child { Name = name, Birthday = birthday });
+        if (child != null)
+        {
+            Children.Add(child);
+            _selectedId = child.Id;
+            ChildState.SetChild(child.Id);
+        }
+    }
+}
