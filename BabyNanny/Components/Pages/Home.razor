@@ -61,7 +61,7 @@
             Class="homeButton" 
             Size="@(ThemeConstants.Button.Size.Small)" 
             ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)"              
-            @onclick="async () => await ActionClick(BabyNannyRepository.ActionTypes.Feeding)">
+            OnClick="@(async () => await ActionClick(BabyNannyRepository.ActionTypes.Feeding))">
             @BtnFeedText
         </TelerikButton>
     </div>
