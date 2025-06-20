@@ -8,6 +8,7 @@ Follow these guidelines when making contributions.
 - **Use .NET 9 SDK**: Ensure the .NET 9 workload is installed and restore dependencies with `dotnet restore`.
 - **Run Tests**: Execute `dotnet test BabyNanny.sln` before committing. All tests should pass.
 - **Code Style**: Format C# files with `dotnet format` and keep naming consistent with existing code.
+- Telerik controls do not support multiple `onclick` events.
 
 ## Repository Structure
 
