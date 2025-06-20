@@ -1,5 +1,9 @@
 @page "/stats"
+@using BabyNanny.Data
+@using System.ComponentModel
 @inject IJSRuntime JSRuntime
+@inject ChildState ChildState
+@implements IDisposable
 
 <div class="container my-3">
 <h3>Stats</h3>
@@ -63,7 +67,14 @@
 
     protected override void OnInitialized()
     {
+        ChildState.PropertyChanged += OnChildChanged;
         UpdateStats();
+    }
+
+    private void OnChildChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ChildState.SelectedChild))
+            UpdateStats();
     }
 
     private void UpdateStats()
@@ -71,6 +82,9 @@
         var actions = App.BabyNannyRepository?.GetActions();
         if (actions == null)
             return;
+        var childId = ChildState.SelectedChild?.Id;
+        if (childId.HasValue)
+            actions = actions.Where(a => a.ChildId == childId.Value).ToList();
         var from = DateTime.Today.AddDays(-SelectedRange + 1);
         var filtered = actions
             .Where(a => a.Started.HasValue && a.Started.Value >= from && a.Type == (int)SelectedActionType)
@@ -182,5 +196,10 @@
     {
         public string Category { get; set; } = string.Empty;
         public double Value { get; set; }
+    }
+
+    public void Dispose()
+    {
+        ChildState.PropertyChanged -= OnChildChanged;
     }
 }
