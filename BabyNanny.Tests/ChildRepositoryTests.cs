@@ -38,4 +38,16 @@ public class ChildRepositoryTests
         var list = repo.GetChildren();
         Assert.Empty(list!);
     }
+
+    [Fact]
+    public void GetChildren_ReturnsAll()
+    {
+        var path = Path.GetTempFileName();
+        var repo = new BabyNannyRepository(path);
+        repo.Init();
+        repo.AddChild(new Child { Name = "A" });
+        repo.AddChild(new Child { Name = "B" });
+        var list = repo.GetChildren();
+        Assert.Equal(2, list!.Count);
+    }
 }
