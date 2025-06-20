@@ -7,7 +7,9 @@
     Title="Settings"
     BackgroundColor="{DynamicResource PageBackgroundColor}">
     <VerticalStackLayout Padding="20" Spacing="10">
-        <CollectionView ItemsSource="{Binding Children}">
+        <CollectionView ItemsSource="{Binding Children}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedChild, Mode=TwoWay}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Child">
                     <Grid ColumnDefinitions="*,Auto,Auto" Padding="5">

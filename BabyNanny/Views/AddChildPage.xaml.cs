@@ -49,7 +49,8 @@ public partial class AddChildPage : ContentPage
         _child.Name = nameEntry.Text;
         _child.Birthday = birthdayPicker.Date;
 
-        if (_child.Id == 0)
+        var isNew = _child.Id == 0;
+        if (isNew)
         {
             _repository.AddChild(_child);
         }
@@ -58,7 +59,7 @@ public partial class AddChildPage : ContentPage
             _repository.UpdateChild(_child);
         }
 
-        _childState.AddOrUpdateChild(_child);
+        _childState.AddOrUpdateChild(_child, select: isNew);
         await Shell.Current.GoToAsync("..");
     }
 
