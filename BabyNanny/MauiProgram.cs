@@ -32,8 +32,7 @@ namespace BabyNanny
             var dbPath = Path.Combine(FileSystem.AppDataDirectory, "BabyNanny.db");
 
             builder.Services.AddSingleton(s => ActivatorUtilities.CreateInstance<BabyNannyRepository>(s, dbPath));
-
-
+            builder.Services.AddSingleton<ChildState>();
 
             return builder.Build();
         }

@@ -9,7 +9,8 @@ BabyNanny.sln
 └── BabyNanny/
     ├── App.xaml / App.xaml.cs            # Application entry
     ├── MauiProgram.cs                    # Dependency registration
-    ├── MainPage.xaml / MainPage.xaml.cs  # Hosts the BlazorWebView
+    ├── AppShell.xaml                     # Shell navigation
+    ├── Views/                            # ContentPages used by the shell
     ├── Components/                       # Razor pages and layout
     ├── Data/                             # SQLite repository and dialog service
     ├── Models/                           # Database entities
