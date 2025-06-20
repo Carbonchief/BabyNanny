@@ -7,6 +7,11 @@
             return await Application.Current!.Windows[0].Page!.DisplayPromptAsync(title, message);
         }
 
+        public async Task DisplayAlert(string title, string message, string cancel)
+        {
+            await Application.Current!.Windows[0].Page!.DisplayAlert(title, message, cancel);
+        }
+
         public async Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
         {
             return await Application.Current!.Windows[0].Page!.DisplayAlert(title, message, accept, cancel);
