@@ -34,6 +34,13 @@ app.MapPut("/api/children/{id}", async (int id, Child updated, BabyNannyContext 
 
 app.MapPost("/api/actions", async (BabyAction action, BabyNannyContext db) =>
 {
+    var exists = await db.Actions.AnyAsync(a =>
+        a.ChildId == action.ChildId && a.Started != null && a.Stopped == null);
+    if (exists)
+    {
+        return Results.BadRequest(new { message = "An action is already running for this child." });
+    }
+
     db.Actions.Add(action);
     await db.SaveChangesAsync();
     return Results.Created($"/api/actions/{action.Id}", action);

@@ -62,10 +62,21 @@ namespace BabyNanny.Data
             return _connection?.Table<BabyAction>().OrderByDescending(x => x.Started).ToList();
         }
 
-        public void AddAction(BabyAction? action)
+        public bool AddAction(BabyAction? action)
         {
+            if (action == null)
+                return false;
+
             _connection = new SQLiteConnection(dbPath);
+
+            var existing = _connection.Table<BabyAction>()
+                .FirstOrDefault(a => a.ChildId == action.ChildId && a.Started != null && a.Stopped == null);
+
+            if (existing != null)
+                return false;
+
             _connection.Insert(action);
+            return true;
 
         }
 

@@ -22,6 +22,7 @@ BabyNanny.sln
 
 * **MauiProgram.cs** configures the app, registers services and sets up the SQLite-backed `BabyNannyRepository`.
 * **BabyNannyRepository** creates tables for `Child` and `BabyAction` and exposes CRUD methods.
+* Starting a new action checks for an existing one in progress to avoid overlap.
 * **Models** (`Child` and `BabyAction`) map to SQLite tables using attributes from `sqlite-net` and `SQLiteNetExtensions`.
 * **Home.razor** implements the main UI where users log feeding, sleeping and diaper events.
 

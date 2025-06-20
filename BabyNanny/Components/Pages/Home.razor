@@ -179,7 +179,14 @@
             ChildId = LstChildren[0].Id,
             FeedingType = feedType
         };
-        App.BabyNannyRepository?.AddAction(action);
+        var added = App.BabyNannyRepository?.AddAction(action) ?? false;
+        if (!added)
+        {
+            await DialogService.DisplayAlert("Action Active",
+                "Another action is already running for this child.", "OK", "");
+            return;
+        }
+
         LstActions?.Add(action);
         LstActions = LstActions?.OrderByDescending(x => x.Started).ToList();
         _lastAction = action;
@@ -215,7 +222,7 @@
         if (string.IsNullOrEmpty(option) || option == "Cancel")
             return;
 
-        var action = AddAction(BabyNannyRepository.ActionTypes.Diaper);
+        var action = await AddAction(BabyNannyRepository.ActionTypes.Diaper);
         if (action == null)
             return;
 
@@ -244,7 +251,7 @@
             return;
         }
 
-        var action = AddAction(BabyNannyRepository.ActionTypes.Sleeping);
+        var action = await AddAction(BabyNannyRepository.ActionTypes.Sleeping);
         if (action == null)
             return;
 
@@ -269,11 +276,17 @@
         return action;
     }
 
-    private BabyAction? AddAction(BabyNannyRepository.ActionTypes type)
+    private async Task<BabyAction?> AddAction(BabyNannyRepository.ActionTypes type)
     {
         if (LstChildren == null) return null;
         var action = new BabyAction { Type = (int)type, Started = DateTime.Now, ChildId = LstChildren[0].Id };
-        App.BabyNannyRepository?.AddAction(action);
+        var added = App.BabyNannyRepository?.AddAction(action) ?? false;
+        if (!added)
+        {
+            await DialogService.DisplayAlert("Action Active",
+                "Another action is already running for this child.", "OK", "");
+            return null;
+        }
         LstActions?.Add(action);
         LstActions = LstActions?.OrderByDescending(x => x.Started).ToList();
         _lastAction = action;

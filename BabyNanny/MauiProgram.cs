@@ -12,27 +12,27 @@ namespace BabyNanny
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder                
+            builder
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
-            builder.Services.AddMauiBlazorWebView();           
+            builder.Services.AddMauiBlazorWebView();
             builder.Services.AddTelerikBlazor();
-            builder.Services.AddSingleton(c=>Connectivity.Current);
-            builder.Services.AddSingleton<IDialogService,DialogService>();
+            builder.Services.AddSingleton(c => Connectivity.Current);
+            builder.Services.AddSingleton<IDialogService, DialogService>();
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
 
 
-            var dbPath = Path.Combine(FileSystem.AppDataDirectory,"BabyNanny.db");
+            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "BabyNanny.db");
 
-            builder.Services.AddSingleton(s=> ActivatorUtilities.CreateInstance<BabyNannyRepository>(s,dbPath));
-            
+            builder.Services.AddSingleton(s => ActivatorUtilities.CreateInstance<BabyNannyRepository>(s, dbPath));
+
 
 
             return builder.Build();
