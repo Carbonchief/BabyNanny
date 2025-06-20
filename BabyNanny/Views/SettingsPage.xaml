@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:BabyNanny.Components.Pages"
     x:Class="BabyNanny.Views.SettingsPage"
-    BackgroundColor="{DynamicResource PageBackgroundColor}">
+    BackgroundColor="{DynamicResource PageBackgroundColor}"
+    Padding="20">
     <BlazorWebView HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
             <RootComponent Selector="#app" ComponentType="{x:Type pages:Settings}" />
