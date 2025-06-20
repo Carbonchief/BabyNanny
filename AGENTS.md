@@ -18,6 +18,6 @@ Follow these guidelines when making contributions.
 
 ## Adding Features
 
-- Prefer small, focused commits with clear messages.
+- Features should be fully implemented and tought through.
 - Update or add tests for new functionality in the `BabyNanny.Tests` project.
 - Document significant changes in `README.md`.
