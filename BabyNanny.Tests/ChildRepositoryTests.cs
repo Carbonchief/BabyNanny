@@ -17,6 +17,17 @@ public class ChildRepositoryTests
     }
 
     [Fact]
+    public void AddChild_ThenGetChildren_ReturnsChild()
+    {
+        var repo = new BabyNannyRepository(Path.GetTempFileName());
+        repo.Init();
+        repo.AddChild(new Child { Name = "Test" });
+        var list = repo.GetChildren();
+        Assert.Single(list!);
+        Assert.Equal("Test", list![0].Name);
+    }
+
+    [Fact]
     public void UpdateChild_ChangesName()
     {
         var repo = new BabyNannyRepository(Path.GetTempFileName());

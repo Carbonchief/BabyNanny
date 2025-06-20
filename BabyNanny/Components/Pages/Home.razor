@@ -4,10 +4,12 @@
 @using BabyNanny.Helpers;
 @using System.Linq;
 @using BabyNanny.Data;
+@using System.ComponentModel;
 @inject IConnectivity ConnectivityService;
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
 @inject ChildState ChildState;
+@implements IDisposable
 
 
 <div>
@@ -173,12 +175,12 @@
             _ => BabyAction.FeedingTypes.RightBreast
         };
 
-        if (LstChildren == null) return;
+        if (ChildState.SelectedChild == null) return;
         var action = new BabyAction
         {
             Type = (int)BabyNannyRepository.ActionTypes.Feeding,
             Started = DateTime.Now,
-            ChildId = LstChildren[0].Id,
+            ChildId = ChildState.SelectedChild.Id,
             FeedingType = feedType
         };
         var added = App.BabyNannyRepository?.AddAction(action) ?? false;
@@ -267,7 +269,11 @@
     private BabyAction? GetLastAction(BabyNannyRepository.ActionTypes type)
     {
         LstActions ??= App.BabyNannyRepository?.GetActions();
-        var babyAction = LstActions?.OrderByDescending(s => s.Started).FirstOrDefault(s => s.Type == (int)type);
+        var childId = ChildState.SelectedChild?.Id;
+        var list = LstActions;
+        if (childId.HasValue)
+            list = list?.Where(a => a.ChildId == childId.Value).ToList();
+        var babyAction = list?.OrderByDescending(s => s.Started).FirstOrDefault(s => s.Type == (int)type);
         return babyAction;
     }
 
@@ -280,8 +286,8 @@
 
     private async Task<BabyAction?> AddAction(BabyNannyRepository.ActionTypes type)
     {
-        if (LstChildren == null) return null;
-        var action = new BabyAction { Type = (int)type, Started = DateTime.Now, ChildId = LstChildren[0].Id };
+        if (ChildState.SelectedChild == null) return null;
+        var action = new BabyAction { Type = (int)type, Started = DateTime.Now, ChildId = ChildState.SelectedChild.Id };
         var added = App.BabyNannyRepository?.AddAction(action) ?? false;
         if (!added)
         {
@@ -340,44 +346,55 @@
     {
         _timer?.Stop();
         _timer?.Dispose();
+        ChildState.PropertyChanged -= OnChildChanged;
     }
 
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        var lstChildren = App.BabyNannyRepository?.GetChildren();
-        var lstActions = App.BabyNannyRepository?.GetActions();
+        ChildState.PropertyChanged += OnChildChanged;
         _currentTime = DateTime.Now;
 
-        if (lstActions is { Count: > 0 })
-            _lastAction = lstActions[0];
+        if (ChildState.Children.Count == 0)
+        {
+            var list = App.BabyNannyRepository?.GetChildren();
+            if (list != null)
+                ChildState.Children = list;
+        }
+
+        LstChildren = ChildState.Children;
+
+        if (ChildState.SelectedChild == null && LstChildren.Any())
+            ChildState.SelectedChild = LstChildren.First();
+
+        LoadActions();
+    }
+
+    private void OnChildChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ChildState.SelectedChild) || e.PropertyName == nameof(ChildState.Children))
+        {
+            LstChildren = ChildState.Children;
+            LoadActions();
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void LoadActions()
+    {
+        var actions = App.BabyNannyRepository?.GetActions();
+        var childId = ChildState.SelectedChild?.Id;
+        if (childId.HasValue)
+            actions = actions?.Where(a => a.ChildId == childId.Value).ToList();
 
         LstActivityActions = new List<BabyAction>();
-        if (lstChildren != null && lstChildren.Any())
-        {
-            LstChildren = lstChildren;
-            ChildState.SelectedChild = LstChildren.First();
-        }
-        else
-        {
-            LstChildren = new List<Child>();
-            // var childName = DialogService.DisplayPrompt("Add Child", "Please enter the child's name").Result;
-            var childName = "Child 1";
-            if (!string.IsNullOrEmpty(childName))
-            {
-                var child = App.BabyNannyRepository?.AddChild(new Child { Name = childName });
-                if (child != null)
-                {
-                    LstChildren.Add(child);
-                    ChildState.SelectedChild = child;
-                }
-            }
-        }
 
-        if (lstActions != null && lstActions.Any())
+        if (actions is { Count: > 0 })
         {
-            LstActions = lstActions;
+            LstActions = actions;
+
+            _lastAction = actions.First();
 
             var sleepAction = GetLastAction(BabyNannyRepository.ActionTypes.Sleeping);
             if (sleepAction?.Stopped == null)

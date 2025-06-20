@@ -22,4 +22,13 @@ public class ChildStateTests
         Assert.Single(state.Children);
         Assert.Equal("B", state.Children[0].Name);
     }
+
+    [Fact]
+    public void AddOrUpdateChild_SelectsChildWhenFlagTrue()
+    {
+        var state = new ChildState();
+        var child = new Child { Id = 2, Name = "Child" };
+        state.AddOrUpdateChild(child, select: true);
+        Assert.Equal(child, state.SelectedChild);
+    }
 }

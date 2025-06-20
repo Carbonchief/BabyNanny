@@ -42,7 +42,7 @@ public class ChildState : INotifyPropertyChanged
 
     public string SelectedChildName => _selectedChild?.Name ?? string.Empty;
 
-    public void AddOrUpdateChild(Child child)
+    public void AddOrUpdateChild(Child child, bool select = false)
     {
         var existing = _children.FirstOrDefault(c => c.Id == child.Id);
         if (existing == null)
@@ -54,6 +54,9 @@ public class ChildState : INotifyPropertyChanged
             existing.Name = child.Name;
             existing.Birthday = child.Birthday;
         }
+
+        if (select)
+            SelectedChild = child;
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
     }
