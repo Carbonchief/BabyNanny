@@ -23,10 +23,6 @@ namespace BabyNanny
             builder.Services.AddTelerikBlazor();
             builder.Services.AddSingleton(c => Connectivity.Current);
             builder.Services.AddSingleton<IDialogService, DialogService>();
-            builder.Services.AddHttpClient("api", client =>
-            {
-                client.BaseAddress = new Uri("http://localhost:5180");
-            });
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
@@ -35,10 +31,7 @@ namespace BabyNanny
 
             var dbPath = Path.Combine(FileSystem.AppDataDirectory, "BabyNanny.db");
 
-            builder.Services.AddSingleton(s =>
-                ActivatorUtilities.CreateInstance<BabyNannyRepository>(s,
-                    dbPath,
-                    s.GetRequiredService<IHttpClientFactory>().CreateClient("api")));
+            builder.Services.AddSingleton(s => ActivatorUtilities.CreateInstance<BabyNannyRepository>(s, dbPath));
             builder.Services.AddSingleton<ChildState>();
 
             return builder.Build();

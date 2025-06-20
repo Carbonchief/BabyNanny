@@ -10,7 +10,6 @@ namespace BabyNanny.Api.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
         public string? Name { get; set; }
 
         public DateTime? Birthday { get; set; }

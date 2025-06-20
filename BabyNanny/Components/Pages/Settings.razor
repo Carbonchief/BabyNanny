@@ -62,22 +62,22 @@ else
         IsEditing = true;
     }
 
-    private async Task SaveChildAsync()
+    private Task SaveChildAsync()
     {
         if (EditingChild.Id == 0)
         {
-            var created = await Repository.CreateChildAsync(EditingChild);
-            if (created != null)
-                ChildState.AddOrUpdateChild(created);
+            var created = Repository.AddChild(EditingChild);
+            ChildState.AddOrUpdateChild(created);
         }
         else
         {
-            var success = await Repository.UpdateChildAsync(EditingChild);
-            if (success)
-                ChildState.AddOrUpdateChild(EditingChild);
+            Repository.UpdateChild(EditingChild);
+            ChildState.AddOrUpdateChild(EditingChild);
         }
+
         EditingChild = new Child();
         IsEditing = false;
+        return Task.CompletedTask;
     }
 
     private void CancelEdit()

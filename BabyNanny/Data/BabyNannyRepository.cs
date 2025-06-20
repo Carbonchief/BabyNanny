@@ -1,15 +1,12 @@
-using BabyNanny.Models;
+﻿using BabyNanny.Models;
 using SQLite;
 using SQLiteNetExtensions.Extensions;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
 
 namespace BabyNanny.Data
 {
-    public class BabyNannyRepository(string dbPath, HttpClient httpClient)
+    public class BabyNannyRepository(string dbPath)
     {
-        private readonly HttpClient _httpClient = httpClient;
         private SQLiteConnection? _connection;
 
         public void Init()
@@ -49,26 +46,10 @@ namespace BabyNanny.Data
             return child;
         }
 
-        public async Task<Child?> CreateChildAsync(Child child)
+        public void UpdateChild(Child child)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/children", child);
-            if (!response.IsSuccessStatusCode) return null;
-            var created = await response.Content.ReadFromJsonAsync<Child>();
-            if (created != null)
-            {
-                _connection = new SQLiteConnection(dbPath);
-                _connection.Insert(created);
-            }
-            return created;
-        }
-
-        public async Task<bool> UpdateChildAsync(Child child)
-        {
-            var response = await _httpClient.PutAsJsonAsync($"/api/children/{child.Id}", child);
-            if (!response.IsSuccessStatusCode) return false;
             _connection = new SQLiteConnection(dbPath);
             _connection.Update(child);
-            return true;
         }
 
         public void DeleteChild(int id)
