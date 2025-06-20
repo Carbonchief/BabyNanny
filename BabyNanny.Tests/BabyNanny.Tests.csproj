@@ -7,9 +7,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Include the TimeUtils helper directly so MAUI workloads are not required -->
+    <!-- Include required files so MAUI workload is not required -->
     <Compile Include="..\BabyNanny\Helpers\TimeUtils.cs" Link="TimeUtils.cs" />
+    <Compile Include="..\BabyNanny\Models\Child.cs" Link="Child.cs" />
+    <Compile Include="..\BabyNanny\Data\ChildState.cs" Link="ChildState.cs" />
+    <Compile Include="..\BabyNanny\Data\BabyNannyRepository.cs" Link="BabyNannyRepository.cs" />
+    <Compile Include="..\BabyNanny\Models\BabyAction.cs" Link="BabyAction.cs" />
   </ItemGroup>
 </Project>
