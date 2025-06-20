@@ -1,6 +1,5 @@
-@using BabyNanny.Models
-@inject ChildStateService ChildState
-@inject IDialogService DialogService
+<div class="child-selector d-flex align-items-center gap-2">
+    <select class="form-select form-select-sm w-auto" @onchange="OnChange" value="@_selectedId">
 
 <input id="childMenuToggle" type="checkbox" title="Child menu" class="child-menu-toggle" />
 <div class="child-menu" onclick="document.getElementById('childMenuToggle').checked = false;">
