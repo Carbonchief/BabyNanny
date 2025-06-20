@@ -23,7 +23,11 @@
 {
     <canvas id="statsChart" width="400" height="300"></canvas>
 }
-else
+@if (TrendChartData?.Count > 0)
+{
+    <canvas id="trendChart" width="400" height="300"></canvas>
+}
+@if (SubtypeChartData.Count == 0 && TrendChartData.Count == 0)
 {
     <p>No data available.</p>
 }
@@ -54,7 +58,8 @@ else
     private double AveragePerDay { get; set; }
     private List<int> TimeRanges { get; } = new() { 7, 14, 30 };
     private List<ChartItem> SubtypeChartData { get; set; } = new();
-    private bool _shouldRenderChart;
+    private List<ChartItem> TrendChartData { get; set; } = new();
+    private bool _shouldRenderCharts;
 
     protected override void OnInitialized()
     {
@@ -71,6 +76,8 @@ else
             .Where(a => a.Started.HasValue && a.Started.Value >= from && a.Type == (int)SelectedActionType)
             .ToList();
 
+        TrendChartData = new();
+
         if (SelectedActionType == BabyNannyRepository.ActionTypes.Sleeping)
         {
             var completed = filtered.Where(a => a.Stopped.HasValue).ToList();
@@ -79,7 +86,17 @@ else
             {
                 new ChartItem { Category = "Sleep", Value = AveragePerDay }
             };
-            _shouldRenderChart = true;
+
+            var grouped = new Dictionary<DateTime, double>();
+            foreach (var a in completed)
+            {
+                var day = a.Started!.Value.Date;
+                if (!grouped.ContainsKey(day))
+                    grouped[day] = 0;
+                grouped[day] += (a.Stopped!.Value - a.Started.Value).TotalHours;
+            }
+            BuildTrendData(grouped, from);
+            _shouldRenderCharts = true;
             InvokeAsync(StateHasChanged);
             return;
         }
@@ -105,16 +122,27 @@ else
             SubtypeChartData = new();
         }
 
-        _shouldRenderChart = true;
+        var dayCounts = new Dictionary<DateTime, double>();
+        foreach (var a in filtered)
+        {
+            var day = a.Started!.Value.Date;
+            if (!dayCounts.ContainsKey(day))
+                dayCounts[day] = 0;
+            dayCounts[day] += 1;
+        }
+        BuildTrendData(dayCounts, from);
+
+        _shouldRenderCharts = true;
         InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_shouldRenderChart)
+        if (_shouldRenderCharts)
         {
-            _shouldRenderChart = false;
+            _shouldRenderCharts = false;
             await RenderChart();
+            await RenderTrendChart();
         }
     }
 
@@ -123,6 +151,31 @@ else
         var labels = SubtypeChartData.Select(c => c.Category).ToList();
         var values = SubtypeChartData.Select(c => c.Value).ToList();
         return JSRuntime.InvokeVoidAsync("renderStatsChart", labels, values).AsTask();
+    }
+
+    private Task RenderTrendChart()
+    {
+        var labels = TrendChartData.Select(c => c.Category).ToList();
+        var values = TrendChartData.Select(c => c.Value).ToList();
+        return JSRuntime.InvokeVoidAsync("renderTrendChart", labels, values).AsTask();
+    }
+
+    private void BuildTrendData(Dictionary<DateTime, double> grouped, DateTime from)
+    {
+        TrendChartData = new();
+        var weeks = (int)Math.Ceiling(SelectedRange / 7.0);
+        for (int i = 0; i < weeks; i++)
+        {
+            var start = from.AddDays(i * 7);
+            var end = start.AddDays(Math.Min(7, SelectedRange - i * 7));
+            var days = (end - start).Days;
+            var sum = grouped.Where(kv => kv.Key >= start && kv.Key < end).Sum(kv => kv.Value);
+            TrendChartData.Add(new ChartItem
+            {
+                Category = $"Wk {i + 1}",
+                Value = days > 0 ? sum / days : 0
+            });
+        }
     }
 
     public class ChartItem

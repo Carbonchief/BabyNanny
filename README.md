@@ -25,6 +25,7 @@ BabyNanny.sln
 * Starting a new action checks for an existing one in progress to avoid overlap.
 * **Models** (`Child` and `BabyAction`) map to SQLite tables using attributes from `sqlite-net` and `SQLiteNetExtensions`.
 * **Home.razor** implements the main UI where users log feeding, sleeping and diaper events.
+* **Stats.razor** displays statistics with Chart.js bar and line charts, including weekly trends.
 
 ## Requirements
 
