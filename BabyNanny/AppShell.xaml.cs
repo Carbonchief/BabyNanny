@@ -8,6 +8,7 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         BindingContext = childState;
+        Routing.RegisterRoute("settings", typeof(Views.SettingsPage));
     }
 
     private async void OnSettingsClicked(object? sender, EventArgs e)
