@@ -1,13 +1,16 @@
 @inject ChildStateService ChildState
 @inject IDialogService DialogService
 
-<select class="form-select form-select-sm w-auto d-inline" @onchange="OnChange" value="@_selectedId">
-    @foreach (var c in Children)
-    {
-        <option value="@c.Id">@c.Name</option>
-    }
-</select>
-<TelerikButton Class="ms-2" Size="@(ThemeConstants.Button.Size.Small)" OnClick="AddChild">Add Child</TelerikButton>
+<input id="childMenuToggle" type="checkbox" title="Child menu" class="child-menu-toggle" />
+<div class="child-menu" onclick="document.getElementById('childMenuToggle').checked = false;">
+    <select class="form-select form-select-sm w-auto mb-2" @onchange="OnChange" value="@_selectedId">
+        @foreach (var c in Children)
+        {
+            <option value="@c.Id">@c.Name</option>
+        }
+    </select>
+    <TelerikButton Size="@(ThemeConstants.Button.Size.Small)" OnClick="AddChild">Add Child</TelerikButton>
+</div>
 
 @code {
     private List<Child> Children { get; set; } = new();
