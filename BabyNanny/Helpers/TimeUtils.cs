@@ -22,7 +22,7 @@ namespace BabyNanny.Helpers
             var days = timeSpan.Days % 30; // Approximate 30 days per month
             var hours = timeSpan.Hours;
             var minutes = timeSpan.Minutes;
-            var seconds = timeSpan.Seconds;
+            var seconds = (int)Math.Floor(timeSpan.TotalSeconds);
 
             var result = new List<string>();
 
@@ -42,12 +42,29 @@ namespace BabyNanny.Helpers
                     if (minutes > 0)
                         result.Add($"{minutes}m");
 
-                    if (timeSpan.TotalMinutes < 1 && seconds > 0)
+                    if (timeSpan.TotalMinutes < 1)
                         result.Add($"{seconds}s");
                 }
             }
 
             return string.Join(" ", result);
+        }
+
+        public static string GetTimeAgo(DateTime? past, DateTime? now = null)
+        {
+            if (past == null)
+                return "Invalid start time";
+
+            now ??= DateTime.Now;
+
+            var diff = TimeDifference(past, now);
+            if (string.IsNullOrEmpty(diff))
+            {
+                if ((now.Value - past.Value).TotalSeconds < 1)
+                    diff = "0s";
+            }
+
+            return $"{diff} ago";
         }
     }
 }

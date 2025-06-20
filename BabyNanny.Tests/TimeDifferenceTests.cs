@@ -71,5 +71,14 @@ namespace BabyNanny.Tests
             var result = TimeUtils.TimeDifference(start, end);
             Assert.Equal("1M 3d", result);
         }
+
+        [Fact]
+        public void GetTimeAgo_ReturnsSecondsWithAgoSuffix()
+        {
+            var past = new DateTime(2024, 1, 1, 0, 0, 0);
+            var now = past.AddSeconds(45);
+            var result = TimeUtils.GetTimeAgo(past, now);
+            Assert.Equal("45s ago", result);
+        }
     }
 }
