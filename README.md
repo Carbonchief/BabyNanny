@@ -47,6 +47,12 @@ Restore and build the solution from the command line:
 
 To run for a specific platform, use `-f` with the appropriate target framework (e.g. `net9.0-android`, `net9.0-ios`, `net9.0-windows10.0.19041.0`).
 
+### Manual test: Settings page
+
+1. Build and deploy the app to your target platform.
+2. Open the flyout menu and select **Settings**.
+3. Verify that the Settings page opens without errors.
+
 ## Next steps
 
 The application is intentionally simple and serves as a learning project for MAUI + Blazor. Useful areas to explore next are:
