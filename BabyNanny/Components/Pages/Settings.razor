@@ -1,3 +1,88 @@
 @page "/settings"
-<h3>Settings</h3>
-<p>Manage application settings here.</p>
+@using BabyNanny.Models
+@inject BabyNannyRepository Repository
+@inject ChildState ChildState
+
+<h3 class="mb-3">Children</h3>
+<TelerikListView Data="@ChildState.Children" Class="mb-4">
+    <Template>
+        <div class="d-flex justify-content-between align-items-center">
+            <span>@context.Name (@context.Birthday?.ToString("d"))</span>
+            <TelerikButton OnClick="() => EditChild(context)" Size="@(ThemeConstants.Button.Size.Small)">Edit</TelerikButton>
+        </div>
+    </Template>
+</TelerikListView>
+
+@if (IsEditing)
+{
+    <h4 class="mb-2">@(EditingChild.Id == 0 ? "Add Child" : "Edit Child")</h4>
+    <EditForm Model="EditingChild" OnValidSubmit="SaveChildAsync">
+        <DataAnnotationsValidator />
+        <div class="mb-2">
+            <label>Name</label>
+            <InputText @bind-Value="EditingChild.Name" class="form-control" />
+            <ValidationMessage For="() => EditingChild.Name" />
+        </div>
+        <div class="mb-2">
+            <label>Birthday</label>
+            <InputDate @bind-Value="EditingChild.Birthday" class="form-control" />
+        </div>
+        <TelerikButton Type="submit" Class="me-2">Save</TelerikButton>
+        <TelerikButton OnClick="CancelEdit" ThemeColor="ThemeColor.Light">Cancel</TelerikButton>
+    </EditForm>
+}
+else
+{
+    <TelerikButton OnClick="NewChild">Add Child</TelerikButton>
+}
+
+@code {
+    private Child EditingChild { get; set; } = new();
+    private bool IsEditing { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ChildState.Children.Count == 0)
+        {
+            var local = Repository.GetChildren();
+            if (local != null)
+                ChildState.Children = local;
+        }
+    }
+
+    private void NewChild()
+    {
+        EditingChild = new Child();
+        IsEditing = true;
+    }
+
+    private void EditChild(Child child)
+    {
+        EditingChild = new Child { Id = child.Id, Name = child.Name, Birthday = child.Birthday };
+        IsEditing = true;
+    }
+
+    private Task SaveChildAsync()
+    {
+        if (EditingChild.Id == 0)
+        {
+            var created = Repository.AddChild(EditingChild);
+            ChildState.AddOrUpdateChild(created);
+        }
+        else
+        {
+            Repository.UpdateChild(EditingChild);
+            ChildState.AddOrUpdateChild(EditingChild);
+        }
+
+        EditingChild = new Child();
+        IsEditing = false;
+        return Task.CompletedTask;
+    }
+
+    private void CancelEdit()
+    {
+        EditingChild = new Child();
+        IsEditing = false;
+    }
+}

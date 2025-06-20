@@ -1,4 +1,5 @@
-﻿using SQLite;
+using System.ComponentModel.DataAnnotations;
+using SQLite;
 using SQLiteNetExtensions.Attributes;
 
 namespace BabyNanny.Models
@@ -8,6 +9,7 @@ namespace BabyNanny.Models
     {
         [PrimaryKey, AutoIncrement, Column("Id")]
         public int Id { get; set; }
+        [Required]
         public string? Name { get; set; }
         public DateTime? Birthday { get; set; }
 

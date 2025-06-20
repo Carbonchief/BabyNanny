@@ -46,6 +46,12 @@ namespace BabyNanny.Data
             return child;
         }
 
+        public void UpdateChild(Child child)
+        {
+            _connection = new SQLiteConnection(dbPath);
+            _connection.Update(child);
+        }
+
         public void DeleteChild(int id)
         {
             _connection = new SQLiteConnection(dbPath);
