@@ -6,16 +6,18 @@ namespace BabyNanny
     {
 
         public static BabyNannyRepository? BabyNannyRepository { get; private set; }
+        public static ChildState? ChildState { get; private set; }
 
-        public App(BabyNannyRepository? babyNannyRepository)
+        public App(BabyNannyRepository? babyNannyRepository, ChildState childState)
         {
-            InitializeComponent();      
+            InitializeComponent();
             BabyNannyRepository = babyNannyRepository;
+            ChildState = childState;
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new MainPage());
+            return new Window(new AppShell(ChildState!));
         }
     }
 }

@@ -3,9 +3,11 @@
 @using System.Timers;
 @using BabyNanny.Helpers;
 @using System.Linq;
+@using BabyNanny.Data;
 @inject IConnectivity ConnectivityService;
 @inject NavigationManager NavigationManager;
 @inject IDialogService DialogService;
+@inject ChildState ChildState;
 
 
 <div>
@@ -353,7 +355,10 @@
 
         LstActivityActions = new List<BabyAction>();
         if (lstChildren != null && lstChildren.Any())
+        {
             LstChildren = lstChildren;
+            ChildState.SelectedChild = LstChildren.First();
+        }
         else
         {
             LstChildren = new List<Child>();
@@ -363,7 +368,10 @@
             {
                 var child = App.BabyNannyRepository?.AddChild(new Child { Name = childName });
                 if (child != null)
+                {
                     LstChildren.Add(child);
+                    ChildState.SelectedChild = child;
+                }
             }
         }
 
