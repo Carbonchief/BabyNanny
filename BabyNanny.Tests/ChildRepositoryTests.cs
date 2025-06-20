@@ -27,4 +27,15 @@ public class ChildRepositoryTests
         var list = repo.GetChildren();
         Assert.Equal("New", list!.First().Name);
     }
+
+    [Fact]
+    public void DeleteChild_RemovesChild()
+    {
+        var repo = new BabyNannyRepository(Path.GetTempFileName());
+        repo.Init();
+        var child = repo.AddChild(new Child { Name = "Test" });
+        repo.DeleteChild(child.Id);
+        var list = repo.GetChildren();
+        Assert.Empty(list!);
+    }
 }

@@ -1,14 +1,19 @@
 @page "/settings"
 @using BabyNanny.Models
+@using BabyNanny.Data
 @inject BabyNannyRepository Repository
 @inject ChildState ChildState
+@inject IDialogService DialogService
 
 <h3 class="mb-3">Children</h3>
-<TelerikListView Data="@ChildState.Children" Class="mb-4">
+<TelerikListView Data="@ChildState.Children" Class="mb-3">
     <Template>
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-1">
             <span>@context.Name (@context.Birthday?.ToString("d"))</span>
-            <TelerikButton OnClick="() => EditChild(context)" Size="@(ThemeConstants.Button.Size.Small)">Edit</TelerikButton>
+            <span>
+                <TelerikButton OnClick="() => EditChild(context)" Size="@(ThemeConstants.Button.Size.Small)" Class="me-2">Edit</TelerikButton>
+                <TelerikButton OnClick="() => DeleteChildAsync(context)" Size="@(ThemeConstants.Button.Size.Small)" ThemeColor="ThemeColor.Error">Delete</TelerikButton>
+            </span>
         </div>
     </Template>
 </TelerikListView>
@@ -84,5 +89,15 @@ else
     {
         EditingChild = new Child();
         IsEditing = false;
+    }
+
+    private async Task DeleteChildAsync(Child child)
+    {
+        var confirm = await DialogService.DisplayAlert("Delete Child", $"Delete {child.Name}?", "Delete", "Cancel");
+        if (!confirm)
+            return;
+
+        Repository.DeleteChild(child.Id);
+        ChildState.RemoveChild(child.Id);
     }
 }

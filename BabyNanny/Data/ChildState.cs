@@ -57,4 +57,17 @@ public class ChildState : INotifyPropertyChanged
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
     }
+
+    public void RemoveChild(int id)
+    {
+        var child = _children.FirstOrDefault(c => c.Id == id);
+        if (child == null)
+            return;
+
+        _children.Remove(child);
+        if (_selectedChild?.Id == id)
+            SelectedChild = null;
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Children)));
+    }
 }

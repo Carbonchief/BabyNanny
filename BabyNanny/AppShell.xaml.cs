@@ -14,5 +14,6 @@ public partial class AppShell : Shell
     private async void OnSettingsClicked(object? sender, EventArgs e)
     {
         await GoToAsync("settings");
+        FlyoutIsPresented = false;
     }
 }
