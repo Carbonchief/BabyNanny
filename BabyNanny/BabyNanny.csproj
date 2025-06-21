@@ -33,9 +33,12 @@
   
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.19041.0</SupportedOSPlatformVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
-    <CodesignKey>Apple Development: Created via API (8PVLZVX8L6)</CodesignKey>
-    <CodesignProvision>VS: com.prioritybit.babynanny Development</CodesignProvision>
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">      
+    <ProvisioningType>automatic</ProvisioningType>    
+	<ResizetizerSuppressLocalizedBuild>true</ResizetizerSuppressLocalizedBuild>   
+	<ResizetizerGenerateInfoPlist>false</ResizetizerGenerateInfoPlist>	
+	<CodesignKey>Apple Development: Created via API (78ZB87DKF5)</CodesignKey>    
+	<CodesignProvision>VS: com.prioritybit.babynanny Development</CodesignProvision>
   </PropertyGroup>
   <ItemGroup>
     <!-- App Icon -->
